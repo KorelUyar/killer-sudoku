@@ -36,7 +36,36 @@ function imageToken(href, title, text) {
   const altAttr = text ? ` alt="${text}"` : ' alt=""';
   return `<img src="${src}"${altAttr}${titleAttr} />`;
 }
-marked.use({ renderer: { image: imageToken } });
+// --- Slugify headings so the TOC anchor links actually resolve in the PDF. ---
+// Marked v13 dropped automatic header IDs; we generate GitHub-style slugs ourselves.
+function slugify(text) {
+  // GitHub-style slug: lowercase, drop everything that isn't a letter / digit /
+  // whitespace / underscore / dash, then turn each whitespace into a single
+  // dash. Runs of dashes are *preserved* — that's how "Σ = 405" turns into
+  // "σ--405" (the two spaces around the dropped "=" become two dashes), and
+  // the same applies to em-dashes in "Use Cases — Übersicht".
+  return String(text)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+    .trim()
+    .replace(/\s/g, '-');
+}
+
+function headingToken(text, level) {
+  // Strip any inline HTML and decode HTML entities for the ID,
+  // but keep the rendered HTML inside the heading.
+  const plain = String(text)
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+  const id = slugify(plain);
+  return `<h${level} id="${id}">${text}</h${level}>`;
+}
+
+marked.use({ renderer: { image: imageToken, heading: headingToken } });
 const md = readFileSync(mdPath, 'utf8');
 let body = marked.parse(md, { gfm: true, breaks: false });
 
