@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique @db.VarChar(20)
+  email        String        @unique @db.VarChar(255)
+  passwordHash String        @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  puzzles      Puzzle[]      @relation("PuzzleCreator")
+  results      Result[]
+  ratings      Rating[]
+
+  @@map("users")
+}
+
+model Puzzle {
+  id         Int      @id @default(autoincrement())
+  creatorId  Int      @map("creator_id")
+  difficulty Int      @db.TinyInt
+  gridJson   Json     @map("grid_json")
+  cagesJson  Json     @map("cages_json")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  creator    User          @relation("PuzzleCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  results    Result[]
+  ratings    Rating[]
+  daily      DailyPuzzle[]
+
+  @@map("puzzles")
+}
+
+model Result {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  puzzleId     Int      @map("puzzle_id")
+  timeSeconds  Int      @map("time_seconds")
+  hintsUsed    Int      @default(0) @map("hints_used")
+  completedAt  DateTime @default(now()) @map("completed_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@index([puzzleId, timeSeconds])
+  @@index([userId])
+  @@map("results")
+}
+
+model Rating {
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @map("user_id")
+  puzzleId            Int      @map("puzzle_id")
+  stars               Int      @db.TinyInt
+  difficultyFeedback  String   @map("difficulty_feedback") @db.VarChar(16)
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, puzzleId], name: "user_id_puzzle_id")
+  @@map("ratings")
+}
+
+model DailyPuzzle {
+  id       Int      @id @default(autoincrement())
+  puzzleId Int      @map("puzzle_id")
+  date     DateTime @unique @db.Date
+
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@map("daily_puzzles")
+}

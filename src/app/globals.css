@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  height: 100%;
+  background-color: #07060d;
+  color: #f5f5fa;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 1200px 600px at 10% -10%, rgba(124, 58, 237, 0.22), transparent 50%),
+    radial-gradient(ellipse 1000px 500px at 100% 5%, rgba(6, 182, 212, 0.18), transparent 50%),
+    radial-gradient(ellipse 900px 600px at 50% 100%, rgba(124, 58, 237, 0.1), transparent 60%);
+  background-attachment: fixed;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.4);
+  color: white;
+}
+
+html { scroll-behavior: smooth; }
+
+@layer components {
+  .glass {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+  }
+  .glass-strong {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #a78bfa 0%, #67e8f9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-all;
+    background-image: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+    box-shadow: 0 4px 14px -2px rgba(124, 58, 237, 0.45);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -4px rgba(124, 58, 237, 0.55);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-white/80 hover:text-white border border-white/10 hover:border-white/25 transition-colors;
+  }
+  .input {
+    @apply w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 outline-none transition-colors;
+  }
+  .input:focus {
+    border-color: rgba(124, 58, 237, 0.6);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+  }
+  .card {
+    @apply glass rounded-2xl p-6;
+  }
+}
+
+/* Sudoku grid */
+.sudoku-grid {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(11, 10, 23, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.sudoku-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(14px, 3.5vw, 26px);
+  cursor: pointer;
+  transition: background 120ms, transform 120ms;
+  user-select: none;
+  color: #f5f5fa;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sudoku-cell.given { color: #cdb6ff; font-weight: 600; }
+.sudoku-cell.selected { background: rgba(124, 58, 237, 0.25); box-shadow: inset 0 0 0 2px rgba(167, 139, 250, 0.9); }
+.sudoku-cell.same-number { background: rgba(6, 182, 212, 0.10); }
+.sudoku-cell.peer { background: rgba(255, 255, 255, 0.03); }
+.sudoku-cell.conflict { animation: cell-shake 360ms; background: rgba(239, 68, 68, 0.18); box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.7); }
+.sudoku-cell.just-placed { animation: cell-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sudoku-cell.hint-cell { animation: sparkle 900ms ease-out; }
+
+@keyframes cell-pop {
+  0% { transform: scale(0.6); opacity: 0.2; }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes cell-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-3px); }
+  40%, 60% { transform: translateX(3px); }
+}
+@keyframes sparkle {
+  0% { box-shadow: inset 0 0 0 0 rgba(167, 139, 250, 0.8); }
+  50% { box-shadow: inset 0 0 0 4px rgba(167, 139, 250, 0.8), 0 0 20px rgba(167, 139, 250, 0.6); }
+  100% { box-shadow: inset 0 0 0 0 rgba(167, 139, 250, 0); }
+}
+
+/* Thick borders for 3x3 box divisions */
+.sudoku-cell { border: 1px solid rgba(255, 255, 255, 0.06); }
+.sudoku-cell.border-r-thick { border-right: 2px solid rgba(255, 255, 255, 0.4); }
+.sudoku-cell.border-b-thick { border-bottom: 2px solid rgba(255, 255, 255, 0.4); }
+.sudoku-cell.border-t-thick { border-top: 2px solid rgba(255, 255, 255, 0.4); }
+.sudoku-cell.border-l-thick { border-left: 2px solid rgba(255, 255, 255, 0.4); }
+
+.cage-sum {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  font-size: 9px;
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+.notes-grid > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
