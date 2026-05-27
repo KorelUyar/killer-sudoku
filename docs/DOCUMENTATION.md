@@ -13,7 +13,7 @@ Live: *deployment pending — Setup-Anleitung in §15*
 
 </div>
 
----
+<div class="toc">
 
 ## Inhaltsverzeichnis
 
@@ -37,7 +37,7 @@ Live: *deployment pending — Setup-Anleitung in §15*
 18. [Limitationen & Bekannte Issues](#18-limitationen--bekannte-issues)
 19. [Anhang](#19-anhang)
 
----
+</div>
 
 ## 1. Projektübersicht
 

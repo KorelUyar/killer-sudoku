@@ -132,8 +132,13 @@ const html = `<!DOCTYPE html>
   .cover-page h3 { font-size: 16pt; color: #6d28d9; font-weight: 500; margin: 0 0 24pt; }
   .cover-page p { font-size: 11pt; color: #65657a; margin: 4pt 0; }
   .cover-page strong { font-size: 13pt; color: #1a1a23; }
-  /* Heading first-level after cover should still start a new page (it's the TOC) */
-  .cover-page + hr + h2 { page-break-before: always; }
+  /* Suppress the <hr> that immediately follows the cover wrapper (the "---" in markdown). */
+  .cover-page + hr { display: none; }
+  /* Table of contents — gets a page to itself */
+  .toc { page-break-after: always; }
+  .toc h2 { page-break-before: avoid; margin-top: 0; }
+  .toc ol { font-size: 12pt; line-height: 1.9; }
+  .toc + hr { display: none; }
 </style>
 </head>
 <body>
