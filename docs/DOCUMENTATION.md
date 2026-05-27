@@ -295,7 +295,23 @@ The generator's API entry point is `POST /api/puzzles/generate` (auth required).
 | Feature — Share | Modal with "Copy link" and "Copy as text" (clipboard API). |
 | Feature — Avatar upload | `POST /api/auth/avatar` (multipart, ≤ 2 MB, jpeg/png/webp). `sharp` resizes to 256 × 256 webp at quality 85 and writes to `public/avatars/{userId}_{timestamp}.webp`. Old file is unlinked. `DELETE /api/auth/avatar` removes file + clears column. New `avatar_url VARCHAR(500)` column on `users` (Prisma + raw `sudoku.sql` both updated). `<Avatar/>` component is the single source of truth — used in Navbar dropdown (with hover-to-upload). |
 
-## 12. Repository layout
+## 12. R3 pass — multi-accent palette, prefills, 3D landing, My Puzzles
+
+| Area | Change |
+|---|---|
+| Palette | Multi-accent: violet `#a78bfa` (primary), cyan `#22d3ee` (info / "You" / corner dots in the logo), amber `#fbbf24` (Daily / 405 highlight). Canvas warmed to `#0a0a0f`. 80/15/3/2 disciplined usage. |
+| Logo | Two-tone 3×3 dot grid: four corner dots cyan, five cross-and-center dots violet. |
+| Cage palette | Expanded from 8 to 12 colours (rose, orange, amber, lime, mint, cyan, sky, indigo, lavender, pink, peach, teal). |
+| Grid borders | Cell borders are now clearly visible: 1 px gaps over a rgba(255,255,255,0.14) backdrop, 2 px outer border. 3×3 box dividers via `box-divider-right/-bottom` pseudo-element ribbons in white-34. Dashed cage edges render only where the cage actually ends. Cage-sum label uses the cage's full-opacity colour. |
+| Pre-filled clues by difficulty | Easy: 20–25 given clues. Medium: 8–12. Hard: 0. Both the random generator and the manual `/api/puzzles` POST add prefills if the saved grid is empty. Clues are spread across all 9 3×3 boxes via `pickDistributedCells`. Pre-filled cells are immutable in the solve interface — keyboard, click-to-erase and the Erase button all ignore them. |
+| Landing 3D grid | Multi-layer Framer-Motion build with floor shadow, base plate, raised filled cells (translateZ 6 px), cursor-tracked specular highlight, idle floating animation, prefers-reduced-motion fallback. |
+| Rules page | Now uses `pt-24` and the editorial caption/H1 pattern. |
+| Puzzle list redesign | Editorial layout: "Library" caption + 5xl H1, a highlighted **Daily Challenge** section, then a "Browse" grid of cards. Each card has a `<MiniGridPreview/>` thumbnail of its cage layout, a difficulty badge, play count, average rating with gold star, and a difficulty-coloured hover glow. The card author's name links them to "You" in cyan when the viewer is the creator. |
+| **My puzzles** | New `/my-puzzles` route + dropdown link. `GET /api/puzzles/mine` returns the user's puzzles with aggregate play count + average rating. The page renders an editorial table with hover-revealed delete buttons. |
+| Delete a puzzle | `DELETE /api/puzzles/[id]` — creator OR admin only. Cascade-delete results and ratings (from Prisma `onDelete: CASCADE`). Today's daily puzzle is protected by an explicit 409 check so the live leaderboard doesn't break. |
+| Admin moderation | `username === 'admin'` can delete any puzzle. |
+
+## 13. Repository layout
 
 ```
 src/

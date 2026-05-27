@@ -151,8 +151,44 @@ function partitionIntoCages(solved: Grid, rng: () => number, sizeWeights: number
 
 export interface GeneratedPuzzle {
   solved: Grid;
+  /** The grid that gets persisted — 0 = empty, non-zero = pre-filled clue (given). */
+  grid: Grid;
   cages: Cage[];
   difficulty: 1 | 2 | 3;
+}
+
+/** Pre-fill counts per difficulty. Hard has no clues — purely cage-driven. */
+export const PREFILL_RANGE: Record<1 | 2 | 3, [number, number]> = {
+  1: [20, 25],
+  2: [8, 12],
+  3: [0, 0],
+};
+
+/**
+ * Pick `n` cells distributed across the 9 3×3 boxes so the clues don't
+ * cluster in one corner. Returns absolute (row,col) pairs.
+ */
+export function pickDistributedCells(n: number, rng: () => number): Array<[number, number]> {
+  if (n <= 0) return [];
+  const boxes: Array<Array<[number, number]>> = [];
+  for (let br = 0; br < 3; br++) {
+    for (let bc = 0; bc < 3; bc++) {
+      const cells: Array<[number, number]> = [];
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) cells.push([br * 3 + i, bc * 3 + j]);
+      boxes.push(shuffle(cells, rng));
+    }
+  }
+  const result: Array<[number, number]> = [];
+  let idx = 0;
+  while (result.length < n) {
+    const box = boxes[idx % boxes.length];
+    const cell = box.shift();
+    if (cell) result.push(cell);
+    idx++;
+    // If we've drained every box, stop (we never need >81 anyway).
+    if (idx > 9 * 9) break;
+  }
+  return result.slice(0, n);
 }
 
 export function generatePuzzle(seed: number, difficulty: 1 | 2 | 3): GeneratedPuzzle {
@@ -169,10 +205,21 @@ export function generatePuzzle(seed: number, difficulty: 1 | 2 | 3): GeneratedPu
     const cages = partitionIntoCages(solved, rng, sizeWeights[difficulty]);
     // Cage-sum total cheap check
     if (cages.reduce((a, c) => a + c.sum, 0) !== 405) continue;
-    // Uniqueness check
+    // Uniqueness check on the *empty* board first — that proves the cages
+    // alone fully constrain the puzzle.
     const empty: Grid = Array.from({ length: 9 }, () => Array(9).fill(0));
     const n = countSolutions(empty, cages, 2);
-    if (n === 1) return { solved, cages, difficulty };
+    if (n !== 1) continue;
+    // Build the persistable grid: 0 everywhere by default, plus a few
+    // "given clues" for easier difficulties so beginners have a head start.
+    const [minPre, maxPre] = PREFILL_RANGE[difficulty];
+    const preCount = minPre + Math.floor(rng() * (maxPre - minPre + 1));
+    const grid: Grid = empty.map((row) => [...row]);
+    if (preCount > 0) {
+      const picks = pickDistributedCells(preCount, rng);
+      for (const [r, c] of picks) grid[r][c] = solved[r][c];
+    }
+    return { solved, grid, cages, difficulty };
   }
   throw new Error(`Failed to generate uniquely-solvable puzzle for difficulty ${difficulty}`);
 }

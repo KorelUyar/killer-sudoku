@@ -10,6 +10,14 @@ interface Props {
   interactive?: boolean;
 }
 
+interface CageInfo {
+  cageId: number;
+  sum: number;
+  color: string;
+  isFirst: boolean;
+  edges: { top: boolean; right: boolean; bottom: boolean; left: boolean };
+}
+
 export function SudokuGrid({ cages, interactive = true }: Props) {
   const grid = useGameStore((s) => s.grid);
   const notes = useGameStore((s) => s.notes);
@@ -26,16 +34,29 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
 
   const { play } = useSound();
 
-  const cellInfo = useMemo(() => {
-    const m: Array<Array<{ cageId: number; sum: number; isFirst: boolean } | null>> = Array.from(
-      { length: 9 },
-      () => Array(9).fill(null),
-    );
+  // Pre-compute per-cell cage info + dashed edges.
+  const cageMap: CageInfo[][] = useMemo(() => {
+    const cellToCageId: number[][] = Array.from({ length: 9 }, () => Array(9).fill(-1));
+    cages.forEach((cg, idx) => cg.cells.forEach(([r, c]) => (cellToCageId[r][c] = idx)));
+
+    const m: CageInfo[][] = Array.from({ length: 9 }, () => Array(9).fill(null as unknown as CageInfo));
     for (const cage of cages) {
       const sorted = [...cage.cells].sort(([a, b], [c, d]) => a - c || b - d);
       const [fr, fc] = sorted[0];
+      const color = cageColor(cage.id);
       for (const [r, c] of cage.cells) {
-        m[r][c] = { cageId: cage.id, sum: cage.sum, isFirst: r === fr && c === fc };
+        const id = cellToCageId[r][c];
+        const top = r === 0 || cellToCageId[r - 1][c] !== id;
+        const bottom = r === 8 || cellToCageId[r + 1][c] !== id;
+        const left = c === 0 || cellToCageId[r][c - 1] !== id;
+        const right = c === 8 || cellToCageId[r][c + 1] !== id;
+        m[r][c] = {
+          cageId: cage.id,
+          sum: cage.sum,
+          color,
+          isFirst: r === fr && c === fc,
+          edges: { top, bottom, left, right },
+        };
       }
     }
     return m;
@@ -52,10 +73,13 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
       const [r, c] = selected;
       if (e.key >= '1' && e.key <= '9') {
         e.preventDefault();
+        // Givens are immutable — placeNumber already guards but skip the sound too.
+        if (givens[r][c]) return;
         placeNumber(Number(e.key));
         play('place');
       } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
         e.preventDefault();
+        if (givens[r][c]) return;
         erase();
         play('erase');
       } else if (e.key === 'ArrowUp' && r > 0) {
@@ -74,13 +98,13 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, interactive, status, placeNumber, erase, selectCell, play]);
+  }, [selected, interactive, status, placeNumber, erase, selectCell, play, givens]);
 
   return (
     <div className="sudoku-grid" role="grid" aria-label="Killer Sudoku grid">
       {grid.map((row, r) =>
         row.map((value, c) => {
-          const info = cellInfo[r][c];
+          const info = cageMap[r][c];
           const isSel = selR === r && selC === c;
           const isPeer =
             !isSel &&
@@ -92,15 +116,16 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
           const isJustPlaced = lastPlaced && lastPlaced[0] === r && lastPlaced[1] === c;
           const isHint = hintCell && hintCell[0] === r && hintCell[1] === c;
           const isRevealed = revealed[r]?.[c] ?? false;
+          const isGiven = givens[r][c];
           const noteSet = notes[r][c];
           const boxRight = (c + 1) % 3 === 0 && c !== 8;
           const boxBottom = (r + 1) % 3 === 0 && r !== 8;
-          const boxCls = boxRight && boxBottom ? 'box-rb' : boxRight ? 'box-r' : boxBottom ? 'box-b' : '';
 
           const classes = [
             'sudoku-cell',
-            boxCls,
-            givens[r][c] ? 'given' : 'user-entered',
+            boxRight ? 'box-divider-right' : '',
+            boxBottom ? 'box-divider-bottom' : '',
+            isGiven ? 'given locked' : 'user-entered',
             isRevealed ? 'solution-revealed' : '',
             isSel ? 'selected' : '',
             isPeer ? 'peer' : '',
@@ -112,26 +137,40 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
             .filter(Boolean)
             .join(' ');
 
-          // Cage tint as 8% opacity background
-          const tintBg = info ? `color-mix(in oklab, ${cageColor(info.cageId)} 10%, transparent)` : undefined;
+          // Subtle 6% cage-color background; layered ON TOP of the elevated cell bg.
+          const tint = info?.color;
+          const cellBg = tint
+            ? `linear-gradient(${tint}10, ${tint}10), var(--elevated)`
+            : undefined;
 
           return (
             <div
               key={`${r}-${c}`}
               className={classes}
+              data-row={r + 1}
+              data-col={c + 1}
               onClick={() => interactive && status !== 'gave_up' && selectCell(r, c)}
               role="gridcell"
               aria-selected={isSel}
-              aria-label={`Row ${r + 1}, column ${c + 1}${value ? `, value ${value}` : ''}`}
-              style={{
-                // Layer tint on top of base elevated bg via outline-less inset shadow.
-                background: tintBg
-                  ? `linear-gradient(${tintBg}, ${tintBg}), #131316`
-                  : undefined,
-              }}
+              aria-label={`Row ${r + 1}, column ${c + 1}${value ? `, value ${value}` : ''}${isGiven ? ', given' : ''}`}
+              style={cellBg ? { background: cellBg } : undefined}
             >
+              {/* Dashed cage outline — only on the edges where the cage ends */}
+              {info?.edges.top && (
+                <span className="cage-edge top" style={{ borderColor: info.color, opacity: 0.7 }} />
+              )}
+              {info?.edges.bottom && (
+                <span className="cage-edge bottom" style={{ borderColor: info.color, opacity: 0.7 }} />
+              )}
+              {info?.edges.left && (
+                <span className="cage-edge left" style={{ borderColor: info.color, opacity: 0.7 }} />
+              )}
+              {info?.edges.right && (
+                <span className="cage-edge right" style={{ borderColor: info.color, opacity: 0.7 }} />
+              )}
+
               {info?.isFirst && (
-                <span className="cage-sum" style={{ color: cageColor(info.cageId) }}>
+                <span className="cage-sum" style={{ color: info.color }}>
                   {info.sum}
                 </span>
               )}

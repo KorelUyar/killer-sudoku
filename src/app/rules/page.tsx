@@ -2,18 +2,17 @@ import { BookOpen, Sigma, Hash, Square, Shuffle } from 'lucide-react';
 
 export default function RulesPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4">
-      <div className="flex items-center gap-2 text-accent-glow mb-2">
-        <BookOpen className="h-5 w-5" />
-        <span className="text-sm">How to play</span>
-      </div>
-      <h1 className="text-4xl font-semibold tracking-tight">Killer Sudoku rules</h1>
-      <p className="text-white/70 mt-3">
+    <div className="mx-auto max-w-3xl px-6 pt-24 pb-24">
+      <p className="caption">How to play</p>
+      <h1 className="text-5xl font-semibold mt-2 tracking-[-0.025em]" style={{ color: '#f4f4f5' }}>
+        Killer Sudoku rules
+      </h1>
+      <p className="mt-3" style={{ color: '#a1a1aa' }}>
         Killer Sudoku combines Sudoku with addition. Every standard Sudoku rule still applies — plus
         a few new ones for the cages.
       </p>
 
-      <ul className="mt-8 space-y-4">
+      <ul className="mt-12 space-y-4">
         {[
           {
             icon: Hash,
@@ -46,11 +45,11 @@ export default function RulesPage() {
           return (
             <li key={r.title} className="card flex gap-4">
               <div className="shrink-0">
-                <Icon className="h-6 w-6 text-accent-glow" />
+                <Icon className="h-6 w-6" style={{ color: '#a78bfa' }} />
               </div>
               <div>
-                <div className="font-medium">{r.title}</div>
-                <p className="text-white/70 mt-1">{r.body}</p>
+                <div className="font-medium" style={{ color: '#f4f4f5' }}>{r.title}</div>
+                <p className="mt-1" style={{ color: '#a1a1aa' }}>{r.body}</p>
               </div>
             </li>
           );
@@ -58,12 +57,12 @@ export default function RulesPage() {
       </ul>
 
       <div className="card mt-10">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Sigma className="h-5 w-5 text-accent-glow" /> A useful fact
+        <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: '#f4f4f5' }}>
+          <Sigma className="h-5 w-5" style={{ color: '#fbbf24' }} /> A useful fact
         </h2>
-        <p className="text-white/75 mt-2">
+        <p className="mt-2" style={{ color: '#a1a1aa' }}>
           The digits 1 to 9 sum to 45. A solved Sudoku has nine rows each summing to 45, so the
-          grand total is <span className="font-mono text-accent-glow">405</span>. Since cages cover
+          grand total is <span className="font-mono" style={{ color: '#fbbf24' }}>405</span>. Since cages cover
           every cell exactly once, the cage sums must total 405 too — a quick sanity check before
           you even start solving.
         </p>

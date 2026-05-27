@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Grid3X3, PlusSquare, Calendar, Trophy, BarChart3, BookOpen, LogIn, LogOut, UserPlus, Settings, ChevronDown, Github, Camera, Trash2 } from 'lucide-react';
+import { Grid3X3, PlusSquare, Calendar, Trophy, BarChart3, BookOpen, LogIn, LogOut, UserPlus, ChevronDown, Github, Camera, Trash2, Pencil } from 'lucide-react';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -221,11 +221,14 @@ export function Navbar({ initialUser }: { initialUser: User | null }) {
                       <Link href="/stats" role="menuitem" className="flex items-center gap-2 px-3 py-2 hover:bg-white/[0.04] text-[#f4f4f5]">
                         <BarChart3 className="h-4 w-4 text-[#a1a1aa]" /> My stats
                       </Link>
+                      <Link href="/my-puzzles" role="menuitem" className="flex items-center gap-2 px-3 py-2 hover:bg-white/[0.04] text-[#f4f4f5]">
+                        <Pencil className="h-4 w-4 text-[#a1a1aa]" /> My puzzles
+                      </Link>
                       <Link href="/create" role="menuitem" className="flex items-center gap-2 px-3 py-2 hover:bg-white/[0.04] text-[#f4f4f5]">
                         <PlusSquare className="h-4 w-4 text-[#a1a1aa]" /> Create a puzzle
                       </Link>
                       <Link href="/play" role="menuitem" className="flex items-center gap-2 px-3 py-2 hover:bg-white/[0.04] text-[#f4f4f5]">
-                        <Settings className="h-4 w-4 text-[#a1a1aa]" /> Browse puzzles
+                        <Grid3X3 className="h-4 w-4 text-[#a1a1aa]" /> Browse puzzles
                       </Link>
                       <button
                         onClick={onLogout}

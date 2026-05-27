@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { motion, useInView, animate, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useInView, animate, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
@@ -121,25 +121,32 @@ function Hero() {
 }
 
 function InteractiveFloatingGrid() {
-  // A 4×4 mini-puzzle preview that tilts toward the cursor.
   const ref = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState({ x: 8, y: -10 });
+  const [rotation, setRotation] = useState({ x: 6, y: -8 });
   const [hovering, setHovering] = useState(false);
+  const [light, setLight] = useState({ x: 50, y: 50 });
+  const reducedMotion = useReducedMotion();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const rotateY = ((e.clientX - centerX) / rect.width) * 20;
-    const rotateX = -((e.clientY - centerY) / rect.height) * 20;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const rotateY = ((e.clientX - cx) / rect.width) * 22;
+    const rotateX = -((e.clientY - cy) / rect.height) * 22;
     setRotation({ x: rotateX, y: rotateY });
+    setLight({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
   };
   const handleMouseLeave = () => {
     setHovering(false);
-    setRotation({ x: 8, y: -10 });
+    setRotation({ x: 6, y: -8 });
+    setLight({ x: 50, y: 30 });
   };
 
+  // Tiny 4×4 sample puzzle with 4 cages, each in a different cage colour.
   const cells = [
     [3, 8, 4, 5],
     [6, 9, 2, 7],
@@ -147,10 +154,10 @@ function InteractiveFloatingGrid() {
     [0, 0, 0, 0],
   ];
   const cages: Array<{ id: number; sum: number; cells: Array<[number, number]>; color: string }> = [
-    { id: 1, sum: 11, cells: [[0, 0], [0, 1]], color: 'rgba(252, 211, 77, 0.16)' },     // amber
-    { id: 2, sum: 9, cells: [[0, 2], [0, 3]], color: 'rgba(147, 197, 253, 0.16)' },     // sky
-    { id: 3, sum: 17, cells: [[1, 0], [1, 1], [1, 2]], color: 'rgba(167, 139, 250, 0.16)' }, // lavender
-    { id: 4, sum: 14, cells: [[2, 2], [2, 3], [1, 3]], color: 'rgba(249, 168, 212, 0.16)' }, // pink
+    { id: 1, sum: 11, cells: [[0, 0], [0, 1]], color: '#fbbf24' },
+    { id: 2, sum: 9, cells: [[0, 2], [0, 3]], color: '#60a5fa' },
+    { id: 3, sum: 17, cells: [[1, 0], [1, 1], [1, 2]], color: '#a78bfa' },
+    { id: 4, sum: 14, cells: [[2, 2], [2, 3], [1, 3]], color: '#22d3ee' },
   ];
   const map: Record<string, { id: number; sum: number; color: string; isFirst: boolean }> = {};
   cages.forEach((cg) => {
@@ -160,53 +167,156 @@ function InteractiveFloatingGrid() {
     });
   });
 
+  // Static fallback for users who prefer reduced motion.
+  if (reducedMotion) {
+    return <StaticGrid cells={cells} map={map} />;
+  }
+
   return (
     <motion.div
       ref={ref}
       onMouseEnter={() => setHovering(true)}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      animate={{ rotateX: rotation.x, rotateY: rotation.y, y: hovering ? 0 : [0, -6, 0] }}
+      initial={{ opacity: 0, y: 60, rotateX: 20, rotateY: -20, scale: 0.9 }}
+      animate={
+        hovering
+          ? { opacity: 1, y: 0, rotateX: rotation.x, rotateY: rotation.y, scale: 1 }
+          : { opacity: 1, y: [0, -10, 0], rotateX: [rotation.x, rotation.x + 1.5, rotation.x], rotateY: rotation.y, scale: 1 }
+      }
       transition={
         hovering
-          ? { type: 'spring', stiffness: 100, damping: 15 }
-          : { duration: 8, repeat: Infinity, ease: 'easeInOut' }
+          ? { type: 'spring', stiffness: 90, damping: 14 }
+          : { duration: 7, repeat: Infinity, ease: 'easeInOut' }
       }
-      className="relative grid grid-cols-4 grid-rows-4 p-3 rounded-2xl"
-      style={{
-        transformStyle: 'preserve-3d',
-        aspectRatio: '1/1',
-        backgroundColor: '#1a1a1f',
-        border: '1px solid rgba(255,255,255,0.10)',
-      }}
+      className="relative"
+      style={{ transformStyle: 'preserve-3d', perspective: 1400, aspectRatio: '1/1', willChange: 'transform' }}
     >
-      {cells.flatMap((row, r) =>
-        row.map((v, c) => {
-          const info = map[`${r},${c}`];
-          return (
-            <motion.div
-              key={`${r}-${c}`}
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + (r * 4 + c) * 0.025 }}
-              className="relative flex items-center justify-center font-mono text-2xl"
-              style={{
-                background: info?.color ?? 'transparent',
-                border: '1px solid rgba(255,255,255,0.06)',
-                color: '#f4f4f5',
-              }}
-            >
-              {info?.isFirst && (
-                <span className="absolute top-1 left-1.5 text-[10px] font-semibold" style={{ color: '#a1a1aa' }}>
-                  {info.sum}
-                </span>
-              )}
-              {v !== 0 ? v : ''}
-            </motion.div>
-          );
-        }),
-      )}
+      {/* Floor shadow — projected below the grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          transform: 'translateZ(-50px) scale(1.15)',
+          background: 'radial-gradient(ellipse at center 75%, rgba(0,0,0,0.7), transparent 65%)',
+          filter: 'blur(28px)',
+        }}
+      />
+
+      {/* Base plate */}
+      <div
+        className="absolute inset-0 rounded-2xl"
+        style={{
+          transform: 'translateZ(-10px)',
+          background: 'linear-gradient(135deg, #0a0a0f 0%, #13131a 100%)',
+          boxShadow: '0 40px 90px -25px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04)',
+        }}
+      />
+
+      {/* Main grid layer */}
+      <div
+        className="relative grid grid-cols-4 grid-rows-4 gap-[2px] p-3 rounded-2xl overflow-hidden"
+        style={{
+          transformStyle: 'preserve-3d',
+          backgroundColor: '#1a1a23',
+          border: '1px solid rgba(255,255,255,0.10)',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        {cells.flatMap((row, r) =>
+          row.map((v, c) => {
+            const info = map[`${r},${c}`];
+            const filled = v !== 0;
+            return (
+              <motion.div
+                key={`${r}-${c}`}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + (r * 4 + c) * 0.025 }}
+                className="relative flex items-center justify-center font-mono text-2xl rounded-sm"
+                style={{
+                  // Filled cells stand 6px off the base plate; empty cells sit flat.
+                  transform: filled ? 'translateZ(6px)' : 'translateZ(0)',
+                  background: filled
+                    ? 'linear-gradient(180deg, #1f1f27, #15151b)'
+                    : info
+                      ? `${info.color}14`
+                      : 'transparent',
+                  boxShadow: filled
+                    ? `inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 4px rgba(0,0,0,0.45)${info ? `, inset 0 0 30px ${info.color}30` : ''}`
+                    : info
+                      ? `inset 0 0 0 1px ${info.color}24`
+                      : 'inset 0 1px 0 rgba(255,255,255,0.02)',
+                  color: '#f4f4f5',
+                }}
+              >
+                {info?.isFirst && (
+                  <span className="absolute top-1 left-1.5 text-[10px] font-bold" style={{ color: info.color }}>
+                    {info.sum}
+                  </span>
+                )}
+                {v !== 0 ? v : ''}
+              </motion.div>
+            );
+          }),
+        )}
+
+        {/* Cursor-driven specular highlight inside the grid */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-2xl"
+          style={{
+            background: `radial-gradient(circle 220px at ${light.x}% ${light.y}%, rgba(167, 139, 250, 0.10), transparent 60%)`,
+            mixBlendMode: 'screen',
+          }}
+        />
+
+        {/* Soft top-light specular */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-2xl"
+          style={{
+            transform: 'translateZ(3px)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 45%, rgba(255,255,255,0.025) 100%)',
+          }}
+        />
+      </div>
     </motion.div>
+  );
+}
+
+function StaticGrid({ cells, map }: {
+  cells: number[][];
+  map: Record<string, { id: number; sum: number; color: string; isFirst: boolean }>;
+}) {
+  return (
+    <div className="relative aspect-square">
+      <div
+        className="relative grid grid-cols-4 grid-rows-4 gap-[2px] p-3 rounded-2xl overflow-hidden"
+        style={{ backgroundColor: '#1a1a23', border: '1px solid rgba(255,255,255,0.10)' }}
+      >
+        {cells.flatMap((row, r) =>
+          row.map((v, c) => {
+            const info = map[`${r},${c}`];
+            return (
+              <div
+                key={`${r}-${c}`}
+                className="relative flex items-center justify-center font-mono text-2xl rounded-sm"
+                style={{
+                  background: v !== 0 ? '#15151b' : info ? `${info.color}14` : 'transparent',
+                  color: '#f4f4f5',
+                }}
+              >
+                {info?.isFirst && (
+                  <span className="absolute top-1 left-1.5 text-[10px] font-bold" style={{ color: info.color }}>
+                    {info.sum}
+                  </span>
+                )}
+                {v !== 0 ? v : ''}
+              </div>
+            );
+          }),
+        )}
+      </div>
+    </div>
   );
 }
 

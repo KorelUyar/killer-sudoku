@@ -35,16 +35,16 @@ async function main() {
         const start = Date.now();
         const puzzle = generatePuzzle(seed, difficulty);
         const ms = Date.now() - start;
-        const blankGrid = Array.from({ length: 9 }, () => Array(9).fill(0));
+        const preFilled = puzzle.grid.flat().filter((v) => v !== 0).length;
         const created = await prisma.puzzle.create({
           data: {
             creatorId: admin.id,
             difficulty,
-            gridJson: blankGrid as unknown as object,
+            gridJson: puzzle.grid as unknown as object,
             cagesJson: puzzle.cages as unknown as object,
           },
         });
-        console.log(`  ✓ puzzle #${created.id} (difficulty=${difficulty}) in ${ms}ms`);
+        console.log(`  ✓ puzzle #${created.id} (difficulty=${difficulty}, ${preFilled} clues) in ${ms}ms`);
       }
     }
   }

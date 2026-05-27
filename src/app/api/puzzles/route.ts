@@ -6,7 +6,8 @@ import {
   validateCageSumTotal,
   validateCageStructure,
 } from '@/lib/validator';
-import { countSolutions } from '@/lib/solver';
+import { countSolutions, solve } from '@/lib/solver';
+import { PREFILL_RANGE, pickDistributedCells } from '@/lib/generator';
 import { withErrors } from '@/lib/api-helpers';
 import type { Cage, Grid } from '@/lib/types';
 
@@ -31,6 +32,8 @@ export const GET = withErrors(async (req) => {
       difficulty: p.difficulty,
       createdAt: p.createdAt,
       creator: p.creator.username,
+      grid: p.gridJson,
+      cages: p.cagesJson,
       solvedCount: p._count.results,
       ratingCount: p._count.ratings,
       averageRating: avg,
@@ -57,11 +60,28 @@ export const POST = withErrors(async (req) => {
   const n = countSolutions(grid as Grid, typedCages, 2);
   if (n === 0) throw new HttpError(400, 'Puzzle has no solution');
   if (n > 1) throw new HttpError(400, 'Solution is not unique');
+
+  // Manual builder: if the user-supplied grid is completely empty AND the difficulty
+  // wants pre-filled clues (Easy / Medium), back-fill some clues from the unique
+  // solution so the difficulty rating is meaningful.
+  let persistedGrid = grid as Grid;
+  const allEmpty = persistedGrid.flat().every((v) => v === 0);
+  if (allEmpty && (difficulty === 1 || difficulty === 2)) {
+    const solved = solve(persistedGrid, typedCages);
+    if (solved) {
+      const [minPre, maxPre] = PREFILL_RANGE[difficulty];
+      const preCount = minPre + Math.floor(Math.random() * (maxPre - minPre + 1));
+      const picks = pickDistributedCells(preCount, Math.random);
+      persistedGrid = persistedGrid.map((row) => [...row]);
+      for (const [r, c] of picks) persistedGrid[r][c] = solved[r][c];
+    }
+  }
+
   const puzzle = await prisma.puzzle.create({
     data: {
       creatorId: user.id,
       difficulty,
-      gridJson: grid as unknown as object,
+      gridJson: persistedGrid as unknown as object,
       cagesJson: typedCages as unknown as object,
     },
   });

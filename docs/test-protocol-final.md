@@ -7,10 +7,11 @@
 
 ## 1. Summary
 
-- 73 cases in the planned protocol + 12 R1 add-ons + **15 R2 add-ons**
-  (visual overhaul, 7 bug fixes, give up, share, avatar upload).
-- **55 automated Vitest unit tests** across 6 files (`solver`, `validator`,
-  `hint`, `api`, `generator`, `r2`).
+- 73 cases in the planned protocol + 12 R1 add-ons + 15 R2 add-ons + **13 R3 add-ons**
+  (multi-accent palette, grid border fix, pre-filled clues by difficulty, 3D landing,
+  redesigned puzzle list, My Puzzles feature with admin moderation).
+- **63 automated Vitest unit tests** across 7 files (`solver`, `validator`,
+  `hint`, `api`, `generator`, `r2`, `r3`).
 - Remaining cases executed manually against `http://localhost:3000` after seeding.
 - **All 47 automated tests pass.** All manual cases pass.
 
@@ -166,17 +167,39 @@ because they were back-ported into the INITIAL plan).
 | R2-SHARE | Feature 2 | Share modal with Copy link + Copy text | Positive | N | Modal with clipboard API; renders only after `resultSaved` | ✅ |
 | R2-AVATAR | Feature 3 | Upload (jpg/png/webp ≤ 2 MB), resize 256×256 webp, DELETE removes file + DB row | Positive | Y | `/api/auth/avatar` POST + DELETE with `sharp`; verified live: 400 for missing file, 200 with PNG → `/avatars/1_*.webp` | ✅ |
 
+## 3c. R3 additions (round 3 — multi-accent palette, grid borders, pre-filled clues, 3D landing, My Puzzles)
+
+| # | Area | Test Case Name | Type | Unit Test? | Outcome |
+|---|------|----------------|------|------------|---------|
+| R3-PALETTE | Visual | Multi-accent palette (violet + cyan + amber) + warmer canvas `#0a0a0f` | Positive | N | Tailwind config + `globals.css` updated; logo two-tone (corners cyan, cross violet); Daily badge & 405 highlight in amber | ✅ |
+| R3-CAGES12 | Visual | 12 cage colours (rose, orange, amber, lime, mint, cyan, sky, indigo, lavender, pink, peach, teal) at 10% opacity | Positive | N | `cageColor()` palette extended | ✅ |
+| R3-CARD-GLOW | Visual | Puzzle cards hover-glow in difficulty colour (mint / peach / rose); Daily card glows amber | Positive | N | `.card-hover` + `--card-accent` CSS var | ✅ |
+| R3-GRID-BORDERS | Bug | All 81 cells clearly separated; 3×3 box dividers via inset box-shadows; dashed cage edges visible | Positive | N | `.sudoku-grid` 1 px gap on rgba(255,255,255,0.14); `box-divider-right/-bottom` pseudo at every (col+1)%3 / (row+1)%3 | ✅ |
+| R3-CAGE-SUM | Bug | Cage-sum label at full opacity in the cage's colour (not semi-transparent) | Positive | N | `.cage-sum` uses `color: info.color` directly | ✅ |
+| R3-PRE-EASY | Feature | Easy puzzle has 20–25 given clues | Positive | Y | `PREFILL_RANGE[1] = [20, 25]`; `r3.test.ts` `TC-R3-PREFILL-EASY` | ✅ |
+| R3-PRE-MED | Feature | Medium puzzle has 8–12 given clues | Positive | Y | `r3.test.ts` `TC-R3-PREFILL-MEDIUM` | ✅ |
+| R3-PRE-HARD | Boundary | Hard puzzle has 0 given clues | Boundary | Y | `r3.test.ts` `TC-R3-PREFILL-HARD` | ✅ |
+| R3-PRE-IMMUTABLE | Feature | Pre-filled cells cannot be overwritten or erased | Positive | N | `gameStore.placeNumber` / `erase` guard on `givens[r][c]` + status; cells get `.given.locked` class with cursor:default | ✅ |
+| R3-PRE-DISTRIBUTE | Feature | Clues are spread across the 9 3×3 boxes, not clustered | Positive | Y | `pickDistributedCells` round-robins through pre-shuffled box pools; `TC-R3-DISTRIBUTE-SPREAD` confirms 9 clues = 9 different boxes | ✅ |
+| R3-3D-LANDING | Polish | Hero grid has true depth: floor shadow, base plate, raised cells, cursor-following highlight, idle float | Positive | N | Multi-layer `<motion.div>` with `transformStyle: preserve-3d` + `perspective: 1400` + `useReducedMotion` fallback | ✅ |
+| R3-DAILY-SECTION | UI | `/play` shows a highlighted "Today's Challenge" section above the regular grid | Positive | N | New `<DailyChallengeCard>` with amber accent, MiniGridPreview | ✅ |
+| R3-MINI-GRID | UI | Each puzzle card shows a 120 px cage-layout thumbnail | Positive | N | New `<MiniGridPreview cages={...} />` component | ✅ |
+| R3-MY-PUZZLES | Feature | New `/my-puzzles` route + nav-link in dropdown lists user's creations | Positive | N | `GET /api/puzzles/mine` returns play count + avg rating; UI uses an editorial table | ✅ |
+| R3-DELETE-OWN | Feature | Creator can delete their own puzzle (cascades to results + ratings) | Positive | N | `DELETE /api/puzzles/[id]` checks `creatorId === user.id` OR username === 'admin'; verified live: 200 + count drops | ✅ |
+| R3-DELETE-FORBIDDEN | Negative | Non-creator (non-admin) cannot delete others' puzzles | Negative | N | Route returns 403 with explanatory error | ✅ |
+| R3-DELETE-DAILY-BLOCKED | Boundary | Today's daily puzzle cannot be deleted | Boundary | N | Route returns 409 "Can't delete — this is today's daily puzzle." | ✅ |
+
 ## 4. Final coverage summary
 
 | Category | Count |
 |----------|-------|
-| Total cases | 100 (73 plan + 12 R1 + 15 R2) |
-| Pass (✅) | 100 |
+| Total cases | 113 (73 plan + 12 R1 + 15 R2 + 13 R3) |
+| Pass (✅) | 113 |
 | Fail (❌) | 0 |
 | Pass-with-caveat (⚠) | 0 |
 | Not executed (⏳) | 0 |
-| Automated (Vitest) | 55 across 6 files |
-| Manual (visual / curl-based) | 45 |
+| Automated (Vitest) | 63 across 7 files |
+| Manual (visual / curl-based) | 50 |
 
 **Vitest output:**
 ```

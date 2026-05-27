@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Save, RotateCcw, Wand2, Pencil, Dice5, Sparkles, Loader2 } from 'lucide-react';
 import { cageColor } from '@/lib/utils';
-import type { Cage } from '@/lib/types';
+import type { Cage, Grid } from '@/lib/types';
 
-const EMPTY_GRID: number[][] = Array.from({ length: 9 }, () => Array(9).fill(0));
+const EMPTY_GRID: Grid = Array.from({ length: 9 }, () => Array(9).fill(0));
 
 function adjacent([r, c]: [number, number]): Array<[number, number]> {
   const out: Array<[number, number]> = [];
@@ -28,6 +28,8 @@ export function PuzzleBuilder() {
   const [nextId, setNextId] = useState(1);
   const [mode, setMode] = useState<'manual' | 'random'>('manual');
   const [generating, setGenerating] = useState(false);
+  /** When non-null, this grid is what gets saved (contains the random generator's pre-filled clues). */
+  const [generatedGrid, setGeneratedGrid] = useState<Grid | null>(null);
 
   const cellToCage = useMemo(() => {
     const m: Array<Array<{ cageId: number; sum: number } | null>> = Array.from({ length: 9 }, () => Array(9).fill(null));
@@ -104,7 +106,7 @@ export function PuzzleBuilder() {
       const r = await fetch('/api/puzzles', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ difficulty, grid: EMPTY_GRID, cages }),
+        body: JSON.stringify({ difficulty, grid: generatedGrid ?? EMPTY_GRID, cages }),
       });
       const data = await r.json();
       if (!r.ok) {
@@ -134,11 +136,13 @@ export function PuzzleBuilder() {
         cells: c.cells as Array<[number, number]>,
       }));
       setCages(generated);
+      setGeneratedGrid((data.grid as Grid) ?? null);
       setDrafting([]);
       setDraftSum('');
       const maxId = generated.reduce((m, c) => Math.max(m, c.id), 0);
       setNextId(maxId + 1);
-      toast.success('Random puzzle generated. Review, then Save.');
+      const givens = ((data.grid as number[][]) ?? []).flat().filter((v) => v !== 0).length;
+      toast.success(`Generated · ${givens} given clue${givens === 1 ? '' : 's'}. Review, then Save.`);
     } catch (err) {
       toast.error((err as Error).message);
     } finally {

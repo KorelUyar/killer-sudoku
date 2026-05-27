@@ -93,8 +93,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   selectCell: (r, c) => set({ selected: [r, c], hintCell: null }),
 
   placeNumber: (n) => {
-    const { selected, grid, givens, notesMode, notes } = get();
-    if (!selected) return;
+    const { selected, grid, givens, notesMode, notes, status } = get();
+    if (!selected || status !== 'playing') return;
     const [r, c] = selected;
     if (givens[r][c]) return;
     if (notesMode) {
@@ -113,8 +113,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   erase: () => {
-    const { selected, grid, givens, notes } = get();
-    if (!selected) return;
+    const { selected, grid, givens, notes, status } = get();
+    if (!selected || status !== 'playing') return;
     const [r, c] = selected;
     if (givens[r][c]) return;
     if (grid[r][c] !== 0) {

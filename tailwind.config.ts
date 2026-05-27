@@ -6,10 +6,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Backgrounds
-        canvas: '#0a0a0b',
-        elevated: '#131316',
-        card: '#1a1a1f',
+        // Backgrounds (warmer near-black with slight blue-violet bias)
+        canvas: '#0a0a0f',
+        elevated: '#13131a',
+        card: '#1a1a23',
 
         // Text
         ink: {
@@ -19,11 +19,19 @@ const config: Config = {
           disabled: '#3f3f46',
         },
 
-        // Accent (used sparingly, no gradient)
+        // Multi-accent system
         accent: {
           DEFAULT: '#a78bfa',
           hover: '#c4b5fd',
           muted: 'rgba(167, 139, 250, 0.12)',
+        },
+        info: {
+          DEFAULT: '#22d3ee',
+          muted: 'rgba(34, 211, 238, 0.12)',
+        },
+        highlight: {
+          DEFAULT: '#fbbf24',
+          muted: 'rgba(251, 191, 36, 0.12)',
         },
 
         // Semantic

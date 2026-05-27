@@ -17,8 +17,7 @@ export const POST = withErrors(async (req) => {
   const useSeed = seed ?? Math.floor(Math.random() * 2_147_483_647);
   try {
     const puzzle = generatePuzzle(useSeed, difficulty);
-    const blank = Array.from({ length: 9 }, () => Array(9).fill(0));
-    return NextResponse.json({ difficulty, grid: blank, cages: puzzle.cages, seed: useSeed });
+    return NextResponse.json({ difficulty, grid: puzzle.grid, cages: puzzle.cages, seed: useSeed });
   } catch (err) {
     throw new HttpError(500, `Generation failed: ${(err as Error).message}`);
   }

@@ -15,12 +15,16 @@ export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// R2 cage palette — desaturated pastels per spec
+// R3 cage palette — 12 desaturated pastels for more variation
 const CAGE_PALETTE = [
   '#fda4af', // rose
-  '#fcd34d', // amber
+  '#fb923c', // orange
+  '#fbbf24', // amber
+  '#a3e635', // lime
   '#86efac', // mint
-  '#93c5fd', // sky
+  '#22d3ee', // cyan
+  '#60a5fa', // sky
+  '#818cf8', // indigo
   '#c4b5fd', // lavender
   '#f9a8d4', // pink
   '#fdba74', // peach
