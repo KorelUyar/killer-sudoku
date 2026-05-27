@@ -4,87 +4,136 @@
 
 :root {
   color-scheme: dark;
+  /* Killer Sudoku — R2 palette */
+  --canvas: #0a0a0b;
+  --elevated: #131316;
+  --card: #1a1a1f;
+
+  --ink-primary: #f4f4f5;
+  --ink-secondary: #a1a1aa;
+  --ink-tertiary: #52525b;
+  --ink-disabled: #3f3f46;
+
+  --accent: #a78bfa;
+  --accent-hover: #c4b5fd;
+  --accent-muted: rgba(167, 139, 250, 0.12);
+
+  --success: #10b981;
+  --danger: #f43f5e;
+  --warning: #f59e0b;
+
+  --line-subtle: rgba(255, 255, 255, 0.06);
+  --line-medium: rgba(255, 255, 255, 0.10);
+  --line-strong: rgba(255, 255, 255, 0.16);
 }
 
 html, body {
   height: 100%;
-  background-color: #07060d;
-  color: #f5f5fa;
+  background-color: var(--canvas);
+  color: var(--ink-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-image:
-    radial-gradient(ellipse 1200px 600px at 10% -10%, rgba(124, 58, 237, 0.22), transparent 50%),
-    radial-gradient(ellipse 1000px 500px at 100% 5%, rgba(6, 182, 212, 0.18), transparent 50%),
-    radial-gradient(ellipse 900px 600px at 50% 100%, rgba(124, 58, 237, 0.1), transparent 60%);
-  background-attachment: fixed;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 ::selection {
-  background: rgba(124, 58, 237, 0.4);
+  background: rgba(167, 139, 250, 0.35);
   color: white;
 }
 
 html { scroll-behavior: smooth; }
 
 @layer components {
+  /* Solid panel — replaces glassmorphism for things that need to be legible */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line-medium);
+    border-radius: 12px;
+  }
+  .panel-elevated {
+    background: var(--elevated);
+    border: 1px solid var(--line-medium);
+    border-radius: 12px;
+  }
+  /* Kept for hero/decorative use only; never for dropdowns/text-heavy surfaces. */
   .glass {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--line-subtle);
     backdrop-filter: blur(12px);
   }
   .glass-strong {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-medium);
     backdrop-filter: blur(20px);
   }
-  .text-gradient {
-    background: linear-gradient(135deg, #a78bfa 0%, #67e8f9 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+  /* Primary CTA — solid accent, no gradient, no glow */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-all;
-    background-image: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
-    box-shadow: 0 4px 14px -2px rgba(124, 58, 237, 0.45);
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors;
+    background-color: var(--accent);
+    color: var(--canvas);
   }
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px -4px rgba(124, 58, 237, 0.55);
-  }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:hover { background-color: var(--accent-hover); }
+  .btn-primary:active { background-color: var(--accent); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* Ghost CTA */
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-white/80 hover:text-white border border-white/10 hover:border-white/25 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors;
+    color: rgba(244, 244, 245, 0.85);
+    border: 1px solid var(--line-medium);
+    background-color: transparent;
+  }
+  .btn-ghost:hover {
+    color: var(--ink-primary);
+    border-color: var(--line-strong);
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors;
+    color: var(--danger);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+    background-color: transparent;
+  }
+  .btn-danger:hover {
+    background-color: rgba(244, 63, 94, 0.10);
+    border-color: rgba(244, 63, 94, 0.45);
   }
   .input {
-    @apply w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 outline-none transition-colors;
+    @apply w-full rounded-lg px-3 py-2 outline-none transition-colors;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-medium);
+    color: var(--ink-primary);
   }
   .input:focus {
-    border-color: rgba(124, 58, 237, 0.6);
-    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-muted);
   }
   .card {
-    @apply glass rounded-2xl p-6;
+    @apply panel p-6;
+  }
+  .caption {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
   }
 }
 
-/* Sudoku grid */
+/* --- Sudoku grid: gap-based borders, square corners --- */
 .sudoku-grid {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
   grid-template-rows: repeat(9, minmax(0, 1fr));
+  gap: 1px;
+  padding: 1px;
   aspect-ratio: 1 / 1;
   width: 100%;
   max-width: 560px;
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(11, 10, 23, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.10);
+  border: 2px solid rgba(255, 255, 255, 0.20);
+  border-radius: 0;
   box-sizing: border-box;
 }
 
@@ -96,22 +145,30 @@ html { scroll-behavior: smooth; }
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: clamp(14px, 3.5vw, 26px);
   cursor: pointer;
-  transition: background 120ms, transform 120ms;
+  background-color: var(--elevated);
+  color: var(--ink-primary);
+  transition: background 120ms;
   user-select: none;
-  color: #f5f5fa;
   min-width: 0;
   min-height: 0;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.sudoku-cell.given { color: #cdb6ff; font-weight: 600; }
-.sudoku-cell.selected { background: rgba(124, 58, 237, 0.25); box-shadow: inset 0 0 0 2px rgba(167, 139, 250, 0.9); }
-.sudoku-cell.same-number { background: rgba(6, 182, 212, 0.10); }
-.sudoku-cell.peer { background: rgba(255, 255, 255, 0.03); }
-.sudoku-cell.conflict { animation: cell-shake 360ms; background: rgba(239, 68, 68, 0.18); box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.7); }
+/* Thicker dividers between 3×3 boxes — implemented via extra inset border */
+.sudoku-cell.box-r { box-shadow: inset -1px 0 0 0 rgba(255, 255, 255, 0.22); }
+.sudoku-cell.box-b { box-shadow: inset 0 -1px 0 0 rgba(255, 255, 255, 0.22); }
+.sudoku-cell.box-rb { box-shadow: inset -1px 0 0 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 0 rgba(255, 255, 255, 0.22); }
+
+.sudoku-cell.given { color: var(--accent-hover); font-weight: 600; }
+.sudoku-cell.user-entered { color: var(--ink-primary); }
+.sudoku-cell.solution-revealed { color: rgba(244, 63, 94, 0.85); font-style: italic; }
+.sudoku-cell.selected { background-color: rgba(167, 139, 250, 0.18); outline: 1px solid var(--accent); outline-offset: -1px; }
+.sudoku-cell.same-number { background-color: rgba(167, 139, 250, 0.05); }
+.sudoku-cell.peer { background-color: rgba(255, 255, 255, 0.02); }
+.sudoku-cell.conflict { animation: cell-shake 360ms; background-color: rgba(244, 63, 94, 0.18); outline: 1px solid var(--danger); outline-offset: -1px; }
 .sudoku-cell.just-placed { animation: cell-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.sudoku-cell.hint-cell { animation: sparkle 900ms ease-out; }
+.sudoku-cell.hint-cell { animation: hint-sparkle 1000ms ease-out; }
 
 @keyframes cell-pop {
   0% { transform: scale(0.6); opacity: 0.2; }
@@ -124,29 +181,28 @@ html { scroll-behavior: smooth; }
   30%, 50%, 70% { transform: translateX(-3px); }
   40%, 60% { transform: translateX(3px); }
 }
-@keyframes sparkle {
-  0% { box-shadow: inset 0 0 0 0 rgba(167, 139, 250, 0.8); }
-  50% { box-shadow: inset 0 0 0 4px rgba(167, 139, 250, 0.8), 0 0 20px rgba(167, 139, 250, 0.6); }
-  100% { box-shadow: inset 0 0 0 0 rgba(167, 139, 250, 0); }
+@keyframes hint-sparkle {
+  0%   { background-color: rgba(167, 139, 250, 0); }
+  40%  { background-color: rgba(167, 139, 250, 0.35); }
+  100% { background-color: rgba(167, 139, 250, 0); }
 }
 
-/* Thick borders for 3x3 box divisions */
-.sudoku-cell { border: 1px solid rgba(255, 255, 255, 0.06); }
-.sudoku-cell.border-r-thick { border-right: 2px solid rgba(255, 255, 255, 0.4); }
-.sudoku-cell.border-b-thick { border-bottom: 2px solid rgba(255, 255, 255, 0.4); }
-.sudoku-cell.border-t-thick { border-top: 2px solid rgba(255, 255, 255, 0.4); }
-.sudoku-cell.border-l-thick { border-left: 2px solid rgba(255, 255, 255, 0.4); }
-
+/* Cage sum label */
 .cage-sum {
   position: absolute;
   top: 2px;
   left: 4px;
-  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
   line-height: 1;
+  pointer-events: none;
 }
 
+/* Cage dashed inset outlines — each side rendered as its own pseudo when there's a boundary */
+.cage-edge-t::before, .cage-edge-r::after, .cage-edge-b::after, .cage-edge-l::before { content: ''; position: absolute; pointer-events: none; }
+
+/* Notes mini-grid */
 .notes-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -154,7 +210,7 @@ html { scroll-behavior: smooth; }
   width: 100%;
   height: 100%;
   padding: 2px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--ink-secondary);
   text-align: center;
 }
 .notes-grid > span {

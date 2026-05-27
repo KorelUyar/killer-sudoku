@@ -1,8 +1,6 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { motion } from 'framer-motion';
-import { BarChart3, Award, Flame, Lightbulb, Trophy } from 'lucide-react';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Line, LineChart, Legend } from 'recharts';
 import Link from 'next/link';
 import { formatTime } from '@/lib/utils';
 
@@ -15,9 +13,32 @@ interface StatsResponse {
     currentStreak: number;
   };
   recent: Array<{ puzzleId: number; difficulty: number; timeSeconds: number; hintsUsed: number; completedAt: string }>;
+  series: Array<{ label: string; weekStartISO: string; easy: number | null; medium: number | null; hard: number | null; count: number }>;
+  firstSolveDate: string | null;
 }
 
-const diffLabel = ['', 'Easy', 'Medium', 'Hard'];
+const DIFF_COLOR: Record<number, string> = { 1: '#86efac', 2: '#fcd34d', 3: '#f43f5e' };
+
+function relativeTime(iso: string): string {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+function DifficultyBadge({ level }: { level: 1 | 2 | 3 }) {
+  const labelByLevel = { 1: 'Easy', 2: 'Medium', 3: 'Hard' } as const;
+  const color = DIFF_COLOR[level];
+  return (
+    <span
+      className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] rounded border font-medium"
+      style={{ color, backgroundColor: `${color}14`, borderColor: `${color}29` }}
+    >
+      {labelByLevel[level]}
+    </span>
+  );
+}
 
 export function StatsDashboard({ username }: { username: string }) {
   const { data, isLoading } = useQuery<StatsResponse>({
@@ -30,120 +51,134 @@ export function StatsDashboard({ username }: { username: string }) {
 
   if (isLoading || !data) {
     return (
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="card h-64 animate-pulse" />
+      <div className="mx-auto max-w-[1200px] px-6 pt-16">
+        <div className="h-64 panel animate-pulse" />
       </div>
     );
   }
 
   if (data.stats.totalSolved === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4">
-        <div className="card text-center py-16">
-          <BarChart3 className="h-10 w-10 text-accent-glow mx-auto mb-3" />
-          <h1 className="text-2xl font-semibold">No stats yet</h1>
-          <p className="text-white/60 mt-2">Solve your first puzzle to start tracking your progress.</p>
-          <Link href="/play" className="btn-primary mt-6 inline-flex">
-            Browse puzzles
-          </Link>
-        </div>
+      <div className="mx-auto max-w-2xl px-6 pt-24 text-center">
+        <p className="caption">Your performance</p>
+        <h1 className="text-5xl font-semibold tracking-[-0.025em] mt-2" style={{ color: '#f4f4f5' }}>Stats</h1>
+        <p className="mt-8 text-base" style={{ color: '#a1a1aa' }}>
+          No data yet. Solve a puzzle to start tracking your performance.
+        </p>
+        <Link href="/play" className="inline-block mt-6 text-sm" style={{ color: '#a78bfa' }}>
+          Browse puzzles →
+        </Link>
       </div>
     );
   }
 
-  const barData = [1, 2, 3].map((d) => ({
-    name: diffLabel[d],
-    best: data.stats.bestPerDifficulty[d] ?? null,
-    avg: data.stats.avgPerDifficulty[d] ?? null,
-  }));
+  const bestEasy = data.stats.bestPerDifficulty[1] ?? data.stats.bestPerDifficulty[2] ?? data.stats.bestPerDifficulty[3];
+  const bestTime = bestEasy != null ? formatTime(bestEasy) : '—';
+  const firstSolveDate = data.firstSolveDate
+    ? new Date(data.firstSolveDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : '—';
 
-  const cards = [
-    { label: 'Solved', value: data.stats.totalSolved, icon: Trophy, color: 'text-amber-300' },
-    { label: 'Current streak', value: `${data.stats.currentStreak}d`, icon: Flame, color: 'text-orange-300' },
-    { label: 'Total hints used', value: data.stats.totalHints, icon: Lightbulb, color: 'text-cyan-300' },
-    {
-      label: 'Best (easy)',
-      value: data.stats.bestPerDifficulty[1] ? formatTime(data.stats.bestPerDifficulty[1]) : '—',
-      icon: Award,
-      color: 'text-emerald-300',
-    },
+  const metrics: Array<{ value: string; label: string }> = [
+    { value: String(data.stats.totalSolved), label: 'Puzzles solved' },
+    { value: bestTime, label: 'Best time' },
+    { value: `${data.stats.currentStreak}d`, label: 'Current streak' },
+    { value: String(data.stats.totalHints), label: 'Hints used' },
   ];
 
   return (
-    <div className="mx-auto max-w-5xl px-4">
-      <h1 className="text-3xl font-semibold tracking-tight">Hi, {username}</h1>
-      <p className="text-white/60 mt-1">Your Killer Sudoku stats.</p>
+    <div className="mx-auto max-w-[1200px] px-6 pt-16">
+      <p className="caption">Your performance</p>
+      <h1 className="text-5xl font-semibold tracking-[-0.025em] mt-2" style={{ color: '#f4f4f5' }}>Stats</h1>
+      <p className="mt-2" style={{ color: '#a1a1aa' }}>
+        {username} · since {firstSolveDate}
+      </p>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        {cards.map((c, i) => {
-          const Icon = c.icon;
-          return (
-            <motion.div
-              key={c.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="card"
-            >
-              <Icon className={`h-5 w-5 ${c.color}`} />
-              <div className="text-3xl font-semibold mt-3 font-mono">{c.value}</div>
-              <div className="text-xs text-white/55 mt-1">{c.label}</div>
-            </motion.div>
-          );
-        })}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-12 mt-16 pb-12 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+        {metrics.map((m) => (
+          <div key={m.label}>
+            <div className="text-5xl font-mono font-semibold tabular-nums" style={{ color: '#f4f4f5' }}>{m.value}</div>
+            <div className="caption mt-3">{m.label}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="card mt-6">
-        <h2 className="text-lg font-semibold mb-4">Time by difficulty</h2>
-        <div className="h-64">
-          <ResponsiveContainer>
-            <BarChart data={barData}>
-              <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
-              <YAxis stroke="rgba(255,255,255,0.5)" tickFormatter={(v) => formatTime(Number(v))} />
-              <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-                contentStyle={{
-                  background: 'rgba(11,10,23,0.95)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                }}
-                formatter={(v: number) => formatTime(v)}
-              />
-              <Bar dataKey="best" fill="#a78bfa" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="avg" fill="#06b6d4" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="grid md:grid-cols-2 gap-12 mt-12">
+        <div>
+          <h3 className="text-lg font-medium mb-6" style={{ color: '#f4f4f5' }}>Average time by difficulty</h3>
+          <div className="h-64">
+            <ResponsiveContainer>
+              <LineChart data={data.series}>
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="label" stroke="#52525b" tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis
+                  stroke="#52525b"
+                  tickLine={false}
+                  axisLine={false}
+                  fontSize={11}
+                  tickFormatter={(v) => (typeof v === 'number' ? `${Math.round(v / 60)}m` : '')}
+                />
+                <Tooltip
+                  cursor={{ stroke: 'rgba(255,255,255,0.08)' }}
+                  contentStyle={{ background: '#1a1a1f', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8, fontSize: 12 }}
+                  formatter={(v) => (v == null ? '—' : formatTime(Number(v)))}
+                  labelStyle={{ color: '#a1a1aa' }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11, color: '#a1a1aa' }} iconSize={6} iconType="circle" />
+                <Line type="monotone" dataKey="easy" stroke="#86efac" strokeWidth={1.5} dot={false} name="Easy" connectNulls />
+                <Line type="monotone" dataKey="medium" stroke="#fcd34d" strokeWidth={1.5} dot={false} name="Medium" connectNulls />
+                <Line type="monotone" dataKey="hard" stroke="#f43f5e" strokeWidth={1.5} dot={false} name="Hard" connectNulls />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-baseline justify-between mb-6">
+            <h3 className="text-lg font-medium" style={{ color: '#f4f4f5' }}>Puzzles per week</h3>
+            <span className="text-xs" style={{ color: '#52525b' }}>last 8 weeks</span>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer>
+              <BarChart data={data.series} barCategoryGap="20%">
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="label" stroke="#52525b" tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis stroke="#52525b" tickLine={false} axisLine={false} fontSize={11} allowDecimals={false} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                  contentStyle={{ background: '#1a1a1f', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: '#a1a1aa' }}
+                />
+                <Bar dataKey="count" fill="#a78bfa" radius={[2, 2, 0, 0]} maxBarSize={12} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
-      <div className="card mt-6">
-        <h2 className="text-lg font-semibold mb-4">Recent solves</h2>
+      <div className="mt-16">
+        <div className="flex items-baseline gap-3 mb-6">
+          <h3 className="text-lg font-medium" style={{ color: '#f4f4f5' }}>Recent</h3>
+          <span className="text-sm" style={{ color: '#52525b' }}>last {data.recent.length} solves</span>
+        </div>
         {data.recent.length === 0 ? (
-          <p className="text-white/55 text-sm">No recent results.</p>
+          <p className="text-sm" style={{ color: '#52525b' }}>No recent solves.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-left text-white/55">
-              <tr>
-                <th className="py-2 pr-4">Puzzle</th>
-                <th className="pr-4">Difficulty</th>
-                <th className="pr-4">Time</th>
-                <th className="pr-4">Hints</th>
-                <th className="pr-4">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.recent.map((r, i) => (
-                <tr key={i} className="border-t border-white/5">
-                  <td className="py-2 pr-4 text-white/70 font-mono">#{r.puzzleId}</td>
-                  <td className="pr-4">{diffLabel[r.difficulty]}</td>
-                  <td className="pr-4 font-mono">{formatTime(r.timeSeconds)}</td>
-                  <td className="pr-4 font-mono text-white/70">{r.hintsUsed}</td>
-                  <td className="pr-4 text-white/55">{new Date(r.completedAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div>
+            {data.recent.map((r) => (
+              <div
+                key={`${r.puzzleId}-${r.completedAt}`}
+                className="grid grid-cols-[64px_88px_72px_72px_72px_1fr] gap-6 py-4 items-center text-sm border-t"
+                style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+              >
+                <span className="font-mono" style={{ color: '#52525b' }}>#{r.puzzleId}</span>
+                <DifficultyBadge level={r.difficulty as 1 | 2 | 3} />
+                <span className="font-mono" style={{ color: '#f4f4f5' }}>{formatTime(r.timeSeconds)}</span>
+                <span style={{ color: '#a1a1aa' }}>{r.hintsUsed} hints</span>
+                <span className="font-mono font-medium" style={{ color: '#f4f4f5' }}>{r.timeSeconds + r.hintsUsed * 60}</span>
+                <span className="text-right" style={{ color: '#52525b' }}>{relativeTime(r.completedAt as unknown as string)}</span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

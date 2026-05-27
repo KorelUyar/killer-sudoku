@@ -37,15 +37,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
-        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
-          <LogIn className="h-5 w-5 text-accent-glow" /> Sign in
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-6">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card w-full max-w-md">
+        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2" style={{ color: '#f4f4f5' }}>
+          <LogIn className="h-5 w-5" style={{ color: '#a78bfa' }} /> Sign in
         </h1>
-        <p className="text-white/60 text-sm mb-6">Welcome back to Killer Sudoku.</p>
+        <p className="text-sm mb-6" style={{ color: '#a1a1aa' }}>Welcome back to Killer Sudoku.</p>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label htmlFor="u" className="text-sm text-white/75 mb-1 block">Username</label>
+            <label htmlFor="u" className="text-sm mb-1 block" style={{ color: '#a1a1aa' }}>Username</label>
             <input
               id="u"
               className="input"
@@ -58,7 +58,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="p" className="text-sm text-white/75 mb-1 block">Password</label>
+            <label htmlFor="p" className="text-sm mb-1 block" style={{ color: '#a1a1aa' }}>Password</label>
             <input
               id="p"
               type="password"
@@ -74,9 +74,9 @@ export default function LoginPage() {
             {pending ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
-        <p className="text-sm text-white/60 mt-6">
+        <p className="text-sm mt-6" style={{ color: '#a1a1aa' }}>
           New here?{' '}
-          <Link href="/auth/register" className="text-accent-glow hover:underline">
+          <Link href="/auth/register" className="hover:underline" style={{ color: '#a78bfa' }}>
             Create an account
           </Link>
         </p>

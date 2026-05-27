@@ -15,15 +15,16 @@ export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// R2 cage palette — desaturated pastels per spec
 const CAGE_PALETTE = [
-  'hsl(265 70% 70%)',
-  'hsl(195 70% 70%)',
-  'hsl(220 70% 75%)',
-  'hsl(290 60% 75%)',
-  'hsl(165 60% 70%)',
-  'hsl(40 75% 75%)',
-  'hsl(335 60% 75%)',
-  'hsl(150 55% 70%)',
+  '#fda4af', // rose
+  '#fcd34d', // amber
+  '#86efac', // mint
+  '#93c5fd', // sky
+  '#c4b5fd', // lavender
+  '#f9a8d4', // pink
+  '#fdba74', // peach
+  '#6ee7b7', // teal
 ];
 
 export function cageColor(cageId: number): string {

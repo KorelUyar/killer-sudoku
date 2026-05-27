@@ -31,16 +31,15 @@ export default async function DailyPage() {
   if (!daily) redirect('/play');
   const user = await getCurrentUser();
   return (
-    <div className="mx-auto max-w-6xl px-4">
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full text-sm text-accent-glow">
-          🗓 Daily Challenge · {todayISO()}
-        </div>
-        <h1 className="text-3xl font-semibold mt-3 tracking-tight">
+    <div className="mx-auto max-w-[1200px] px-6 pt-16">
+      <div className="text-center mb-10">
+        <p className="caption">Daily challenge · {todayISO()}</p>
+        <h1 className="text-4xl md:text-5xl font-semibold mt-2 tracking-[-0.025em]" style={{ color: '#f4f4f5' }}>
           Today&apos;s puzzle, the same for everyone.
         </h1>
       </div>
       <SolveBoard
+        isDaily
         puzzleId={daily.puzzle.id}
         difficulty={daily.puzzle.difficulty}
         creator={daily.puzzle.creator.username}
@@ -48,7 +47,7 @@ export default async function DailyPage() {
         cages={daily.puzzle.cagesJson as unknown as { id: number; sum: number; cells: Array<[number, number]> }[]}
         currentUser={user}
       />
-      <div className="mt-10">
+      <div className="mt-12">
         <DailyLeaderboard />
       </div>
     </div>

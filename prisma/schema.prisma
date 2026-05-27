@@ -12,6 +12,7 @@ model User {
   username     String        @unique @db.VarChar(20)
   email        String        @unique @db.VarChar(255)
   passwordHash String        @map("password_hash") @db.VarChar(255)
+  avatarUrl    String?       @map("avatar_url") @db.VarChar(500)
   createdAt    DateTime      @default(now()) @map("created_at")
 
   puzzles      Puzzle[]      @relation("PuzzleCreator")

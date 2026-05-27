@@ -311,22 +311,26 @@ export function PuzzleBuilder() {
           </div>
         </div>
 
-        <div className="card">
-          <h2 className="font-semibold mb-3">Difficulty</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {([1, 2, 3] as const).map((d) => (
-              <button
-                key={d}
-                onClick={() => setDifficulty(d)}
-                className={`py-2 rounded-lg border transition-colors text-sm ${
-                  difficulty === d ? 'bg-white/10 border-white/25 text-white' : 'border-white/10 text-white/65 hover:border-white/20'
-                }`}
-              >
-                {['Easy', 'Medium', 'Hard'][d - 1]}
-              </button>
-            ))}
+        {mode === 'manual' && (
+          <div className="card">
+            <h2 className="font-semibold mb-3" style={{ color: '#f4f4f5' }}>Difficulty</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {([1, 2, 3] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  className={`py-2 rounded-lg border transition-colors text-sm ${
+                    difficulty === d
+                      ? 'bg-white/[0.06] border-white/25 text-[#f4f4f5]'
+                      : 'border-white/[0.10] text-[#a1a1aa] hover:border-white/20'
+                  }`}
+                >
+                  {['Easy', 'Medium', 'Hard'][d - 1]}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <motion.button
           onClick={savePuzzle}

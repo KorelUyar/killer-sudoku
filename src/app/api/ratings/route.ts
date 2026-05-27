@@ -15,10 +15,12 @@ export const POST = withErrors(async (req) => {
   });
   if (!hasResult) throw new HttpError(403, 'You must solve the puzzle before rating it');
 
-  await prisma.rating.upsert({
+  // Use the @@unique([userId, puzzleId], name: "user_id_puzzle_id") key from prisma/schema.prisma.
+  const rating = await prisma.rating.upsert({
     where: { user_id_puzzle_id: { userId: user.id, puzzleId } },
     create: { userId: user.id, puzzleId, stars, difficultyFeedback },
     update: { stars, difficultyFeedback },
+    select: { id: true, stars: true, difficultyFeedback: true },
   });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, rating });
 });

@@ -40,12 +40,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
-        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
-          <UserPlus className="h-5 w-5 text-accent-glow" /> Create account
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-6">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card w-full max-w-md">
+        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2" style={{ color: '#f4f4f5' }}>
+          <UserPlus className="h-5 w-5" style={{ color: '#a78bfa' }} /> Create account
         </h1>
-        <p className="text-white/60 text-sm mb-6">Track your scores and save your puzzles.</p>
+        <p className="text-sm mb-6" style={{ color: '#a1a1aa' }}>Track your scores and save your puzzles.</p>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label htmlFor="u" className="text-sm text-white/75 mb-1 block">Username</label>
@@ -65,9 +65,9 @@ export default function RegisterPage() {
             {pending ? 'Creating…' : 'Create account'}
           </button>
         </form>
-        <p className="text-sm text-white/60 mt-6">
+        <p className="text-sm mt-6" style={{ color: '#a1a1aa' }}>
           Already have one?{' '}
-          <Link href="/auth/login" className="text-accent-glow hover:underline">
+          <Link href="/auth/login" className="hover:underline" style={{ color: '#a78bfa' }}>
             Sign in
           </Link>
         </p>

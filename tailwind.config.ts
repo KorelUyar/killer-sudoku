@@ -6,40 +6,58 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: {
-          DEFAULT: '#07060d',
-          elevated: '#0d0c17',
+        // Backgrounds
+        canvas: '#0a0a0b',
+        elevated: '#131316',
+        card: '#1a1a1f',
+
+        // Text
+        ink: {
+          primary: '#f4f4f5',
+          secondary: '#a1a1aa',
+          tertiary: '#52525b',
+          disabled: '#3f3f46',
         },
+
+        // Accent (used sparingly, no gradient)
         accent: {
-          violet: '#7c3aed',
-          cyan: '#06b6d4',
-          glow: '#a78bfa',
+          DEFAULT: '#a78bfa',
+          hover: '#c4b5fd',
+          muted: 'rgba(167, 139, 250, 0.12)',
         },
-        border: {
-          DEFAULT: 'rgba(255,255,255,0.08)',
-          strong: 'rgba(255,255,255,0.16)',
+
+        // Semantic
+        success: '#10b981',
+        danger: '#f43f5e',
+        warning: '#f59e0b',
+
+        // Cage tints (used at 8% opacity overlay)
+        cage: {
+          rose: '#fda4af',
+          amber: '#fcd34d',
+          mint: '#86efac',
+          sky: '#93c5fd',
+          lavender: '#c4b5fd',
+          pink: '#f9a8d4',
+          peach: '#fdba74',
+          teal: '#6ee7b7',
+        },
+
+        // Border alias
+        line: {
+          subtle: 'rgba(255, 255, 255, 0.06)',
+          medium: 'rgba(255, 255, 255, 0.10)',
+          strong: 'rgba(255, 255, 255, 0.16)',
         },
       },
       fontFamily: {
         sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-      backgroundImage: {
-        'aurora':
-          'radial-gradient(ellipse 1200px 600px at 10% 0%, rgba(124,58,237,0.25), transparent 50%), radial-gradient(ellipse 1000px 500px at 90% 10%, rgba(6,182,212,0.22), transparent 50%)',
-        'noise':
-          "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
-        'gradient-accent': 'linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)',
-      },
-      boxShadow: {
-        glow: '0 0 0 1px rgba(124,58,237,0.35), 0 0 32px -8px rgba(124,58,237,0.45)',
-        cyan: '0 0 0 1px rgba(6,182,212,0.35), 0 0 32px -8px rgba(6,182,212,0.45)',
-      },
       animation: {
         'cell-pop': 'cell-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1)',
         shake: 'shake 360ms cubic-bezier(.36,.07,.19,.97)',
         shimmer: 'shimmer 1.4s linear infinite',
-        'pulse-glow': 'pulse-glow 1.8s ease-in-out infinite',
         sparkle: 'sparkle 900ms ease-out',
       },
       keyframes: {
@@ -57,10 +75,6 @@ const config: Config = {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
-        },
-        'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(124,58,237,0.6)' },
-          '50%': { boxShadow: '0 0 0 8px rgba(124,58,237,0)' },
         },
         sparkle: {
           '0%': { transform: 'scale(0.5)', opacity: '0' },

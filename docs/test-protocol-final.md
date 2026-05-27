@@ -7,11 +7,10 @@
 
 ## 1. Summary
 
-- 73 cases in the planned protocol (70 base + 3 high-value back-ports from R1)
-  + 12 additional R1 cases (generator feature + regression catches).
-  Overall split: 36 positive · 24 negative · 13 boundary + 12 R1 add-ons.
-- **47 automated Vitest unit tests** across 5 files (`solver`, `validator`,
-  `hint`, `api`, `generator`).
+- 73 cases in the planned protocol + 12 R1 add-ons + **15 R2 add-ons**
+  (visual overhaul, 7 bug fixes, give up, share, avatar upload).
+- **55 automated Vitest unit tests** across 6 files (`solver`, `validator`,
+  `hint`, `api`, `generator`, `r2`).
 - Remaining cases executed manually against `http://localhost:3000` after seeding.
 - **All 47 automated tests pass.** All manual cases pass.
 
@@ -147,17 +146,37 @@ because they were back-ported into the INITIAL plan).
 | R1-14 | UC11: auto solve | Generator's solved grid is valid Sudoku | Positive | Y | — | `generateSolved(seed)` | Each row/col/box contains 1–9 exactly once | `TC-GEN-01` confirms | ✅ |
 | R1-15 | UC4/UC11: random | `POST /api/puzzles/generate` requires auth + returns cages | Positive | N | Admin cookie | `curl -X POST` | Returns difficulty, empty grid, cages array, seed | Verified via curl: returns valid JSON with all cages | ✅ |
 
+## 3b. R2 additions (round 2 — bugs, visual overhaul, give up / share / avatar)
+
+| # | Area | Test Case Name | Type | Unit Test? | Outcome |
+|---|------|----------------|------|------------|---------|
+| R2-COLOR | Visual | Removed violet→cyan gradients, replaced with solid `#a78bfa` accent | Positive | N | New `tailwind.config.ts` + `globals.css` use single accent tone; verified visually | ✅ |
+| R2-LOGO | Visual | Replaced ✨ sparkle with 3×3 dot-grid `LogoMark` | Positive | N | New `Logo.tsx`; Navbar & landing chip use it | ✅ |
+| R2-DROPDOWN | Bug 1 | Profile dropdown solid `#1a1a1f`, z-50, box-shadow, scale-95→100 entry | Positive | N | No backdrop-blur, text legible over any content | ✅ |
+| R2-HINT-CAP | Bug 2 | Hint counter cannot exceed `emptyCellCount` | Boundary | Y | Frontend disables button at cap; backend Zod max(81) + runtime check return 400 "Hint limit reached" | ✅ |
+| R2-DAILY-HINT | Bug 3 | Daily page passes `puzzleId` to the same hint endpoint as `/play/[id]` | Positive | N | `<SolveBoard isDaily ... />` reuses identical client; verified via curl with daily puzzle (#6) | ✅ |
+| R2-DAILY-LB | Bug 4 | Daily LB refetches after solve via `queryClient.invalidateQueries(['daily-lb'])` | Positive | N | `isDaily` prop triggers invalidation in `onCheck` | ✅ |
+| R2-GRID-BORDERS | Bug 5 | Grid uses CSS-grid `gap: 1px` against backdrop colour — no doubled lines | Positive | N | `globals.css` `.sudoku-grid`; 3×3 box dividers via `inset` box-shadows; square corners | ✅ |
+| R2-RATING-PERSIST | Bug 6 | Rating writes to DB via `prisma.rating.upsert` with compound unique key | Positive | N | Verified end-to-end with admin user; second rating updates the existing row | ✅ |
+| R2-RATING-UI | Bug 6 | Submit button cycles idle → submitting → saved with green check; stars turn gold | Positive | N | `ratingState` machine; stars use `#fcd34d` after save | ✅ |
+| R2-DUP-DIFFICULTY | Bug 7 | Manual mode shows only bottom difficulty panel; random mode only the top one | Positive | N | Conditional render on `mode` | ✅ |
+| R2-3D-FOLLOW | Polish | Hero grid tilts to mouse on hover, returns to idle float on leave | Positive | N | Spring-animated `rotateX`/`rotateY` via framer-motion | ✅ |
+| R2-STATS-REDESIGN | Stats | Editorial layout (large numerals, no cards) + Line + Bar charts + recent table | Positive | N | New `StatsDashboard.tsx` + backend series in `/api/stats` | ✅ |
+| R2-GIVEUP | Feature 1 | Give up confirmation dialog → reveals solution in rose, no result saved | Positive | Y | New `/api/puzzles/[id]/solution` + store `revealSolution` + `gave_up` status; covered by `r2.test.ts` | ✅ |
+| R2-SHARE | Feature 2 | Share modal with Copy link + Copy text | Positive | N | Modal with clipboard API; renders only after `resultSaved` | ✅ |
+| R2-AVATAR | Feature 3 | Upload (jpg/png/webp ≤ 2 MB), resize 256×256 webp, DELETE removes file + DB row | Positive | Y | `/api/auth/avatar` POST + DELETE with `sharp`; verified live: 400 for missing file, 200 with PNG → `/avatars/1_*.webp` | ✅ |
+
 ## 4. Final coverage summary
 
 | Category | Count |
 |----------|-------|
-| Total cases | 85 (73 from plan incl. 3 back-ports + 12 additional R1) |
-| Pass (✅) | 85 |
+| Total cases | 100 (73 plan + 12 R1 + 15 R2) |
+| Pass (✅) | 100 |
 | Fail (❌) | 0 |
 | Pass-with-caveat (⚠) | 0 |
 | Not executed (⏳) | 0 |
-| Automated (Vitest) | 47 across 5 files |
-| Manual (visual / curl-based) | 38 |
+| Automated (Vitest) | 55 across 6 files |
+| Manual (visual / curl-based) | 45 |
 
 **Vitest output:**
 ```

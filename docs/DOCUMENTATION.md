@@ -276,7 +276,26 @@ The generator's API entry point is `POST /api/puzzles/generate` (auth required).
 | Welcome banner & navbar | New gradient-initials avatar + dropdown menu (Stats / Create / Browse / Sign out); toast moved to bottom-right |
 | Random puzzle generator | New mode toggle in `/create` + `POST /api/puzzles/generate` route |
 
-## 11. Repository layout
+## 11. R2 pass — visual overhaul + give up + share + avatar upload
+
+| Area | Change |
+|---|---|
+| Color palette | New zinc/violet system: canvas `#0a0a0b`, card `#1a1a1f`, ink `#f4f4f5/#a1a1aa/#52525b`, single accent `#a78bfa`. Removed all violet→cyan gradients; logo uses solid colours + 3×3 dot-grid monogram (`<LogoMark/>`) instead of the sparkle icon. |
+| Spacing | All page containers use `max-w-[1200px] mx-auto px-6` with `pt-16` so content sits clear of the navbar. Auth pages are vertically centred. |
+| Bug — profile dropdown | Solid `#1a1a1f` background, 1 px white-10 border, scale-in entrance, z-50, no backdrop-blur. |
+| Bug — hint cap | Frontend disables the Hint button when `hintsUsed >= emptyCellCount` (per-puzzle). Backend rejects with 400 + "Hint limit reached" if the client sends a `hintsUsed` ≥ the empty-cell count of the original puzzle. |
+| Bug — Daily hints | `/daily` reuses `<SolveBoard>` with `isDaily` flag → identical hint endpoint and code path as `/play/[id]`. |
+| Bug — Daily leaderboard | After solve, `queryClient.invalidateQueries(['daily-lb'])` so the table updates instantly. |
+| Bug — Grid borders | Reworked to a CSS-grid with `gap: 1 px` against a coloured backdrop — eliminates doubled lines. 3×3 box dividers via inset box-shadows; corners square. |
+| Bug — Rating persistence | `prisma.rating.upsert` with the compound unique key now actually persists; the submit button cycles idle → submitting → saved (green check), stars turn `#fcd34d` after save. |
+| Bug — Duplicate difficulty selector | Random-mode shows only the upper selector; manual mode only the lower. Same state behind both. |
+| Polish — 3D landing grid | Hero grid tilts toward the cursor via framer-motion spring (`rotateX`/`rotateY`); returns to idle float on mouse leave. |
+| Stats — editorial redesign | Large mono numerals (no cards), Line chart for "Average time by difficulty" (mint/amber/rose), Bar chart for "Puzzles per week", borderless table for recent solves with hairline separators. Backend now returns an 8-week series in `/api/stats`. |
+| Feature — Give Up | Confirmation dialog → `GET /api/puzzles/[id]/solution` → `revealSolution(solved)` in the game store fills empty/wrong cells, marks them in rose, sets status `gave_up`. No result is saved. |
+| Feature — Share | Modal with "Copy link" and "Copy as text" (clipboard API). |
+| Feature — Avatar upload | `POST /api/auth/avatar` (multipart, ≤ 2 MB, jpeg/png/webp). `sharp` resizes to 256 × 256 webp at quality 85 and writes to `public/avatars/{userId}_{timestamp}.webp`. Old file is unlinked. `DELETE /api/auth/avatar` removes file + clears column. New `avatar_url VARCHAR(500)` column on `users` (Prisma + raw `sudoku.sql` both updated). `<Avatar/>` component is the single source of truth — used in Navbar dropdown (with hover-to-upload). |
+
+## 12. Repository layout
 
 ```
 src/

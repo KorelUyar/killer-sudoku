@@ -61,7 +61,7 @@ export async function getCurrentUser() {
     if (!userId) return null;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return null;
-    return { id: user.id, username: user.username, email: user.email };
+    return { id: user.id, username: user.username, email: user.email, avatarUrl: user.avatarUrl };
   } catch {
     return null;
   }

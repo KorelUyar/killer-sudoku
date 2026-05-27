@@ -49,3 +49,7 @@ yarn-error.log*
 
 # Local PDF rendering temp file
 docs/*.tmp.html
+
+# User-uploaded avatars (keep folder via .gitkeep)
+public/avatars/*
+!public/avatars/.gitkeep

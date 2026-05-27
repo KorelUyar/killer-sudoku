@@ -8,6 +8,8 @@ interface GameState {
   grid: Grid;
   notes: Set<number>[][];
   givens: boolean[][];
+  revealed: boolean[][];           // cells filled by "Give up" reveal
+  emptyCellCount: number;          // initial empty cell count = hint cap
   cages: Cage[];
   selected: [number, number] | null;
   conflicts: Set<string>;
@@ -19,7 +21,7 @@ interface GameState {
   notesMode: boolean;
   lastPlaced: [number, number] | null;
   hintCell: [number, number] | null;
-  status: 'idle' | 'playing' | 'paused' | 'won';
+  status: 'idle' | 'playing' | 'paused' | 'won' | 'gave_up';
 
   loadPuzzle: (puzzleId: number, grid: Grid, cages: Cage[]) => void;
   selectCell: (r: number, c: number) => void;
@@ -27,6 +29,7 @@ interface GameState {
   erase: () => void;
   toggleNotesMode: () => void;
   applyHint: (row: number, col: number, value: number) => void;
+  revealSolution: (solved: Grid) => void;
   setConflicts: (cells: Array<[number, number]>) => void;
   clearConflicts: () => void;
   tick: () => void;
@@ -38,11 +41,17 @@ function emptyNotes(): Set<number>[][] {
   return Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => new Set<number>()));
 }
 
+function emptyBoolGrid(): boolean[][] {
+  return Array.from({ length: 9 }, () => Array(9).fill(false));
+}
+
 export const useGameStore = create<GameState>((set, get) => ({
   puzzleId: null,
   grid: Array.from({ length: 9 }, () => Array(9).fill(0)),
   notes: emptyNotes(),
-  givens: Array.from({ length: 9 }, () => Array(9).fill(false)),
+  givens: emptyBoolGrid(),
+  revealed: emptyBoolGrid(),
+  emptyCellCount: 81,
   cages: [],
   selected: null,
   conflicts: new Set(),
@@ -58,11 +67,14 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   loadPuzzle: (puzzleId, grid, cages) => {
     const givens = grid.map((row) => row.map((v) => v !== 0));
+    const emptyCellCount = givens.flat().filter((g) => !g).length;
     set({
       puzzleId,
       grid: grid.map((r) => [...r]),
       notes: emptyNotes(),
       givens,
+      revealed: emptyBoolGrid(),
+      emptyCellCount,
       cages,
       selected: null,
       conflicts: new Set(),
@@ -120,6 +132,29 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   toggleNotesMode: () => set({ notesMode: !get().notesMode }),
 
+  revealSolution: (solved) => {
+    const { givens, grid } = get();
+    const newGrid = grid.map((r) => [...r]);
+    const newRevealed = emptyBoolGrid();
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (givens[r][c]) continue;
+        if (newGrid[r][c] !== solved[r][c]) {
+          newGrid[r][c] = solved[r][c];
+          newRevealed[r][c] = true;
+        }
+      }
+    }
+    set({
+      grid: newGrid,
+      revealed: newRevealed,
+      notes: emptyNotes(),
+      status: 'gave_up',
+      selected: null,
+      conflicts: new Set(),
+    });
+  },
+
   applyHint: (row, col, value) => {
     const { grid, notes, hintsUsed, elapsedSeconds, hintPenaltyFlash } = get();
     const newGrid = grid.map((r) => [...r]);
@@ -158,7 +193,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       puzzleId: null,
       grid: Array.from({ length: 9 }, () => Array(9).fill(0)),
       notes: emptyNotes(),
-      givens: Array.from({ length: 9 }, () => Array(9).fill(false)),
+      givens: emptyBoolGrid(),
+      revealed: emptyBoolGrid(),
+      emptyCellCount: 81,
       cages: [],
       selected: null,
       conflicts: new Set(),
