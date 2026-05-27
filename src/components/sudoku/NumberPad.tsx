@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Eraser, PencilLine } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useSound } from '@/components/shared/SoundProvider';
+import { cn } from '@/lib/utils';
 
 export function NumberPad() {
   const placeNumber = useGameStore((s) => s.placeNumber);
@@ -17,8 +18,7 @@ export function NumberPad() {
   const selectedValue = selected ? grid[selected[0]][selected[1]] : 0;
   const disabled = status !== 'playing';
 
-  // For each digit 1..9, count how many copies are missing from the grid
-  // (a fully-placed digit has 9 occurrences in a complete grid).
+  // Count how many copies of each digit are missing from the grid (max 9).
   const remaining = useMemo(() => {
     const counts: Record<number, number> = { 1: 9, 2: 9, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9, 8: 9, 9: 9 };
     for (let r = 0; r < 9; r++) {
@@ -34,35 +34,25 @@ export function NumberPad() {
     <div className="panel p-4 flex flex-col gap-3">
       <div className="grid grid-cols-9 gap-1.5">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => {
-          const left = remaining[n];
-          const exhausted = left === 0;
-          const pct = (left / 9) * 100;
-          // Iris while plenty left, amber when running low, bar hidden when exhausted.
-          const color = left >= 3 ? 'var(--iris)' : left > 0 ? 'var(--amber)' : 'transparent';
+          const isExhausted = remaining[n] === 0;
+          const isActive = selectedValue === n && !isExhausted;
           return (
             <button
               key={n}
               type="button"
-              data-active={selectedValue === n}
-              data-exhausted={exhausted}
-              disabled={disabled || exhausted}
+              disabled={disabled || isExhausted}
               onClick={() => {
                 placeNumber(n);
                 play('place');
               }}
-              aria-label={`Place ${n}, ${left} remaining`}
-              className="numpad-btn aspect-square text-xl relative"
+              aria-label={`Place ${n}, ${remaining[n]} remaining`}
+              className={cn(
+                'numpad-btn aspect-square text-xl tabular-nums',
+                isActive && 'active',
+                isExhausted && 'exhausted',
+              )}
             >
-              <span className="leading-none">{n}</span>
-              <span
-                className="numpad-progress"
-                style={
-                  {
-                    ['--remaining-pct' as never]: `${pct}%`,
-                    ['--remaining-color' as never]: color,
-                  } as React.CSSProperties
-                }
-              />
+              {n}
             </button>
           );
         })}
@@ -70,7 +60,7 @@ export function NumberPad() {
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={toggleNotesMode}
-          className={`btn-ghost ${notesMode ? '!border-[color:var(--iris)] !text-[color:var(--iris)]' : ''}`}
+          className={cn('btn-ghost', notesMode && '!border-[color:var(--iris)] !text-[color:var(--iris)]')}
           aria-pressed={notesMode}
         >
           <PencilLine className="h-4 w-4" />
