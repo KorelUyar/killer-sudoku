@@ -55,6 +55,12 @@ body = body.replace(/<div class="mermaid">([\s\S]*?)<\/div>/g, (_m, inner) => {
 // Cover-page wrapper
 body = body.replace(/<div class="cover">[\s\S]*?<\/div>/, (m) => `<section class="cover-page">${m}</section>`);
 
+// Mark the detailed test-cases table (the wide one) so we can apply tighter CSS.
+body = body.replace(
+  /(<h3[^>]*>14\.3 Detaillierte Test-Cases<\/h3>[\s\S]*?)<table>/,
+  '$1<table class="test-cases">',
+);
+
 const html = `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -87,11 +93,32 @@ const html = `<!DOCTYPE html>
   pre { background: #f7f7fa; padding: 10pt 12pt; border-radius: 6pt; overflow: hidden; font-size: 9pt; border: 1px solid #e5e5ea; }
   pre code { background: transparent; padding: 0; color: #1a1a23; font-size: 9pt; }
   blockquote { border-left: 3px solid #a78bfa; padding: 4pt 12pt; margin: 8pt 0; color: #404052; background: #f9f7ff; }
-  table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 8.5pt; page-break-inside: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0 12pt;
+    font-size: 8pt;
+    page-break-inside: auto;
+    table-layout: fixed;
+  }
   thead { background: #f4f4f7; }
-  th, td { border: 1px solid #dcdce0; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th, td {
+    border: 1px solid #dcdce0;
+    padding: 4pt 5pt;
+    text-align: left;
+    vertical-align: top;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
   th { color: #1a1a23; font-weight: 600; }
+  /* Inside table cells, code must wrap — otherwise long identifiers blow out the column. */
+  td code, th code { white-space: normal; word-break: break-all; font-size: 7.5pt; padding: 0 2pt; }
   tbody tr { page-break-inside: avoid; }
+  /* Detailed test-case table — many narrow columns. Force smaller font + tighter padding. */
+  table.test-cases { font-size: 7pt; }
+  table.test-cases th, table.test-cases td { padding: 3pt 4pt; }
+  table.test-cases td code, table.test-cases th code { font-size: 6.5pt; padding: 0 1pt; }
   hr { border: none; border-top: 1px solid #e5e5ea; margin: 14pt 0; }
   a { color: #6d28d9; text-decoration: none; }
   a:hover { text-decoration: underline; }

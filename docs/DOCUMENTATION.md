@@ -74,7 +74,9 @@ Die fertige Anwendung deckt **alle 14 Use Cases** vollständig ab. Sie verwendet
 
 ## 3. Mockups
 
-Diese Sektion zeigt die finalen UI-Mockups jeder Hauptseite, exportiert aus der laufenden Applikation. Die Reihenfolge folgt dem typischen User-Flow.
+Diese Sektion zeigt die finalen **UI-Design-Mockups** jeder Hauptseite. Die Reihenfolge folgt dem typischen User-Flow.
+
+> **Hinweis:** Diese Bilder sind statische Design-Mockups, die den **angestrebten visuellen Endzustand** zeigen. Die laufende Applikation kann in Details abweichen — z. B. enthalten die Mockups beispielhafte Cage-Layouts, Leaderboard-Einträge fiktiver User (`mastrandrea`, `jvogel`, `darian_42` etc.) und Beispiel-Zeiten, die in der realen App naturgemäß anders aussehen. Für den aktuellen produktiven Zustand bitte die App lokal starten (siehe §15 Setup-Anleitung).
 
 ### 3.1 Landing Page
 
