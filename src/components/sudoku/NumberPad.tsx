@@ -33,22 +33,39 @@ export function NumberPad() {
   return (
     <div className="panel p-4 flex flex-col gap-3">
       <div className="grid grid-cols-9 gap-1.5">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-          <button
-            key={n}
-            type="button"
-            data-active={selectedValue === n}
-            disabled={disabled || remaining[n] === 0}
-            onClick={() => {
-              placeNumber(n);
-              play('place');
-            }}
-            className="numpad-btn aspect-square text-xl disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {n}
-            <span className="remaining">{remaining[n]}</span>
-          </button>
-        ))}
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => {
+          const left = remaining[n];
+          const exhausted = left === 0;
+          const pct = (left / 9) * 100;
+          // Iris while plenty left, amber when running low, bar hidden when exhausted.
+          const color = left >= 3 ? 'var(--iris)' : left > 0 ? 'var(--amber)' : 'transparent';
+          return (
+            <button
+              key={n}
+              type="button"
+              data-active={selectedValue === n}
+              data-exhausted={exhausted}
+              disabled={disabled || exhausted}
+              onClick={() => {
+                placeNumber(n);
+                play('place');
+              }}
+              aria-label={`Place ${n}, ${left} remaining`}
+              className="numpad-btn aspect-square text-xl relative"
+            >
+              <span className="leading-none">{n}</span>
+              <span
+                className="numpad-progress"
+                style={
+                  {
+                    ['--remaining-pct' as never]: `${pct}%`,
+                    ['--remaining-color' as never]: color,
+                  } as React.CSSProperties
+                }
+              />
+            </button>
+          );
+        })}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button

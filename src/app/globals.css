@@ -357,13 +357,45 @@ html { scroll-behavior: smooth; }
     0 0 0 1px var(--iris),
     0 0 16px rgba(167, 139, 250, 0.35);
 }
-.numpad-btn .remaining {
+/* Exhausted digit (all 9 instances placed in grid) — barely visible, no-op */
+.numpad-btn[data-exhausted="true"] {
+  cursor: not-allowed;
+  background: linear-gradient(180deg, #15151c, #101015);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  color: var(--ink-disabled);
+}
+.numpad-btn[data-exhausted="true"]:hover {
+  background: linear-gradient(180deg, #15151c, #101015);
+}
+.numpad-btn[data-exhausted="true"]:active {
+  transform: none;
+}
+
+/* Thin remaining-count progress bar under each digit */
+.numpad-progress {
   position: absolute;
-  bottom: 2px;
-  right: 4px;
-  font-size: 9px;
-  color: var(--ink-tertiary);
-  font-weight: 500;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+.numpad-progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: var(--remaining-pct, 0%);
+  background: var(--remaining-color, var(--iris));
+  border-radius: 999px;
+  transition: width 280ms cubic-bezier(0.16, 1, 0.3, 1), background 200ms ease;
+}
+.numpad-btn[data-exhausted="true"] .numpad-progress {
+  opacity: 0;
 }
 
 .shimmer {
