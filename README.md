@@ -8,11 +8,24 @@
 
 Built with Next.js 15, TypeScript, Prisma, MySQL, and a lot of attention to detail.
 
+🌐 **Live:** [sudobattles.com](https://sudobattles.com)
+
 [Features](#-features) · [Tech Stack](#-tech-stack) · [Getting Started](#-getting-started) · [Screenshots](#-screenshots)
 
 ---
 
 </div>
+
+## 📸 Screenshots
+
+> Live screenshots from <https://sudobattles.com>.
+
+| Landing | Puzzle Library |
+|---|---|
+| ![Landing](docs/mockups/screenshots/live/01-landing.png) | ![Puzzle Library](docs/mockups/screenshots/live/04-play.png) |
+| **Daily Challenge** | **Personal Stats** |
+| ![Daily](docs/mockups/screenshots/live/07-daily.png) | ![Stats](docs/mockups/screenshots/live/09-stats.png) |
+
 
 ## ✨ Features
 
@@ -103,17 +116,6 @@ Open [http://localhost:3000](http://localhost:3000) and you're in.
 npm test           # Run all tests
 npm run test:watch # Watch mode
 ```
-
-## 📸 Screenshots
-
-> Add your screenshots to `docs/mockups/screenshots/` and reference them here.
-
-| Landing | Solve |
-|---|---|
-| ![Landing](docs/mockups/screenshots/01-landing.png) | ![Solve](docs/mockups/screenshots/05-solve.png) |
-| Create | Stats |
-|---|---|
-| ![Create](docs/mockups/screenshots/06-create.png) | ![Stats](docs/mockups/screenshots/09-stats.png) |
 
 ## 📂 Project Structure
 
