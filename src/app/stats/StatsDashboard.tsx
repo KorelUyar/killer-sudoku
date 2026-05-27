@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Line, LineChart, Legend } from 'recharts';
 import Link from 'next/link';
 import { formatTime } from '@/lib/utils';
+import { DotGridIllustration } from '@/components/shared/DotGridIllustration';
 
 interface StatsResponse {
   stats: {
@@ -61,11 +62,15 @@ export function StatsDashboard({ username }: { username: string }) {
     return (
       <div className="mx-auto max-w-2xl px-6 pt-24 text-center">
         <p className="caption">Your performance</p>
-        <h1 className="text-5xl font-semibold tracking-[-0.025em] mt-2" style={{ color: '#f4f4f5' }}>Stats</h1>
-        <p className="mt-8 text-base" style={{ color: '#a1a1aa' }}>
-          No data yet. Solve a puzzle to start tracking your performance.
+        <h1 className="text-5xl font-semibold tracking-[-0.025em] mt-2" style={{ color: '#fafafe' }}>Stats</h1>
+        <div className="mt-12">
+          <DotGridIllustration size={96} />
+        </div>
+        <h3 className="mt-6 text-xl font-medium" style={{ color: '#fafafe' }}>Your stats await</h3>
+        <p className="mt-2 max-w-sm mx-auto" style={{ color: '#a8a8b8' }}>
+          Solve your first puzzle to start tracking your performance over time.
         </p>
-        <Link href="/play" className="inline-block mt-6 text-sm" style={{ color: '#a78bfa' }}>
+        <Link href="/play" className="btn-primary mt-6 inline-flex text-sm">
           Browse puzzles →
         </Link>
       </div>

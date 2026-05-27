@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Cage } from '@/lib/types';
 import { useGameStore } from '@/store/gameStore';
 import { useSound } from '@/components/shared/SoundProvider';
@@ -66,6 +66,42 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
   const selC = selected?.[1];
   const selectedValue = selR != null && selC != null ? grid[selR][selC] : 0;
 
+  // Detect a cage that *just* became fully filled with the correct sum and no duplicates.
+  // We track a one-shot animation per cage id; only fires on the transition empty→satisfied.
+  const satisfiedCageIds = useMemo(() => {
+    const result = new Set<number>();
+    for (const cage of cages) {
+      let sum = 0;
+      let full = true;
+      const seen = new Set<number>();
+      for (const [r, c] of cage.cells) {
+        const v = grid[r][c];
+        if (!v) { full = false; break; }
+        if (seen.has(v)) { full = false; break; }
+        seen.add(v);
+        sum += v;
+      }
+      if (full && sum === cage.sum) result.add(cage.id);
+    }
+    return result;
+  }, [grid, cages]);
+
+  const prevSatisfiedRef = useRef<Set<number>>(new Set());
+  const [animatingCages, setAnimatingCages] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const newly = new Set<number>();
+    for (const id of satisfiedCageIds) if (!prevSatisfiedRef.current.has(id)) newly.add(id);
+    if (newly.size > 0) {
+      setAnimatingCages(newly);
+      play('complete');
+      const t = window.setTimeout(() => setAnimatingCages(new Set()), 950);
+      prevSatisfiedRef.current = new Set(satisfiedCageIds);
+      return () => window.clearTimeout(t);
+    }
+    prevSatisfiedRef.current = new Set(satisfiedCageIds);
+  }, [satisfiedCageIds, play]);
+
   useEffect(() => {
     if (!interactive || status === 'gave_up' || status === 'won') return;
     const onKey = (e: KeyboardEvent) => {
@@ -120,6 +156,8 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
           const noteSet = notes[r][c];
           const boxRight = (c + 1) % 3 === 0 && c !== 8;
           const boxBottom = (r + 1) % 3 === 0 && r !== 8;
+          const cageAnimating = info ? animatingCages.has(info.cageId) : false;
+          const cageDone = info ? satisfiedCageIds.has(info.cageId) : false;
 
           const classes = [
             'sudoku-cell',
@@ -133,6 +171,7 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
             isConflict ? 'conflict' : '',
             isJustPlaced ? 'just-placed' : '',
             isHint ? 'hint-cell' : '',
+            cageAnimating ? 'cage-satisfied' : '',
           ]
             .filter(Boolean)
             .join(' ');
@@ -170,7 +209,10 @@ export function SudokuGrid({ cages, interactive = true }: Props) {
               )}
 
               {info?.isFirst && (
-                <span className="cage-sum" style={{ color: info.color }}>
+                <span
+                  className={`cage-sum ${cageDone ? 'satisfied' : ''}`}
+                  style={{ color: info.color }}
+                >
                   {info.sum}
                 </span>
               )}

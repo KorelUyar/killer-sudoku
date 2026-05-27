@@ -15,20 +15,20 @@ export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// R3 cage palette — 12 desaturated pastels for more variation
+// R4 cage palette — riso-print harmony, 12 saturated tones used at 10-12% opacity
 const CAGE_PALETTE = [
-  '#fda4af', // rose
+  '#f87171', // coral
   '#fb923c', // orange
   '#fbbf24', // amber
   '#a3e635', // lime
-  '#86efac', // mint
+  '#34d399', // emerald
   '#22d3ee', // cyan
   '#60a5fa', // sky
   '#818cf8', // indigo
-  '#c4b5fd', // lavender
-  '#f9a8d4', // pink
-  '#fdba74', // peach
-  '#6ee7b7', // teal
+  '#a78bfa', // iris
+  '#e879f9', // fuchsia
+  '#f472b6', // pink
+  '#f9a8d4', // rose
 ];
 
 export function cageColor(cageId: number): string {

@@ -46,7 +46,11 @@ export function DailyLeaderboard() {
           </table>
         </div>
       ) : (
-        <p className="text-white/60 mt-4 text-sm">No one has solved today&apos;s puzzle yet — be the first!</p>
+        <div className="mt-6 text-center py-6">
+          <p className="text-sm" style={{ color: '#a8a8b8' }}>
+            No one has solved today&apos;s puzzle yet — be the first!
+          </p>
+        </div>
       )}
     </div>
   );

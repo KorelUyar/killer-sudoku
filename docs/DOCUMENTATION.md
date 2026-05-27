@@ -311,7 +311,27 @@ The generator's API entry point is `POST /api/puzzles/generate` (auth required).
 | Delete a puzzle | `DELETE /api/puzzles/[id]` — creator OR admin only. Cascade-delete results and ratings (from Prisma `onDelete: CASCADE`). Today's daily puzzle is protected by an explicit 409 check so the live leaderboard doesn't break. |
 | Admin moderation | `username === 'admin'` can delete any puzzle. |
 
-## 13. Repository layout
+## 13. R4 pass — Twilight Logic palette, permanent hero, premium feel
+
+| Area | Change |
+|---|---|
+| **Twilight Logic palette** | Canvas deepened to `#0a0a14`; ink primary brightened to `#fafafe`. Four-colour accent system formalised: iris `#a78bfa` (brand), cyan `#22d3ee` (info/links/"You"), amber `#fbbf24` (Daily), rose `#fb7185` (destructive). All CSS vars exposed via `:root`. |
+| **Body multi-hue overlay** | Three stacked radial gradients (purple, cyan, amber) at 4–6% opacity painted on `body`, `background-attachment: fixed`. Adds atmosphere without distraction. |
+| **Cage palette** | 12 riso-print-harmonious colours: coral, orange, amber, lime, emerald, cyan, sky, indigo, iris, fuchsia, pink, rose. Used at 10–12% opacity. |
+| **Hero grid — permanent + 6 layers** | Idle float and slow tilt now run continuously via `useMotionValue` + `useTransform`. Mouse rotation composes on top instead of replacing idle. Six layers in 3D: ground shadow (translateZ −60 px), color glow (−22 px), glass backplate (−6 px), main cell grid, specular highlight, cursor-tracked light. Plus drifting particle layer (iris/cyan/amber dots). `prefers-reduced-motion` → static fallback. |
+| **Cells with depth** | Filled cells translateZ 8 px with inset gradient + drop-shadow + cage-colour inner glow; empty cells sit flat with cage-colour inset glow. |
+| **Page transitions** | New `src/app/template.tsx` re-mounts on route change and runs a 350 ms fade-and-rise animation. Reduced-motion users see no animation. |
+| **AnimatedSection helper** | Reusable `<AnimatedSection>` for scroll-triggered fade-and-rise sections (used in `/play`). |
+| **Daily hero card** | Wide card at top of `/play` with pulsing amber ambient glow, 180 px tilted 3D mini-grid, big "Play today" CTA. |
+| **3D mini-grid previews** | Cards now show a 144 px MiniGridPreview rotated 8°/−8° with raised filled cells, cage-colour inset borders + outer specular highlight; hovers to reduced rotation + scale 1.04. |
+| **Depressible number pad** | New `.numpad-btn` style with subtle gradient, 3D inset shadows, `:active` translateY(2px); when a digit is the currently-selected cell's value the button gets an iris ring + glow. Each button shows the remaining count for that digit. |
+| **Cage completion glow** | Live `satisfiedCageIds` detection in the Grid component: as soon as the user's last cell of a cage falls into place with the correct sum and no duplicate, all that cage's cells flash a green success ring (one-shot, 900 ms) and the sum label scales 1.15× with a soft text-shadow. A subtle "complete" tone fires from the sound provider. |
+| **Selection animation** | Selected cell scales 1.02× with a cyan outline + 2 px ring offset + 24 px halo; locked givens get the same outline but no scale. |
+| **Cell placement animation** | `cell-pop` keyframe now includes a rotateX hint (perspective comes from the cell's own transform stack). |
+| **Empty state personality** | New `<DotGridIllustration>` (3×3 dots, pulse animation) replaces bland "No data" panels on `/stats` empty, `/my-puzzles` empty, and the daily leaderboard. Copy is warmer + has a clear CTA. |
+| **Micro polish** | Custom 8 px scrollbar (iris on hover), accent focus rings via `:focus-visible`, iris-tinted text selection, `cursor: cell` on grid cells, `scroll-behavior: smooth`, shimmer keyframe for skeleton loaders. |
+
+## 14. Repository layout
 
 ```
 src/

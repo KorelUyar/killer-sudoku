@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Trash2, Calendar, Star, Plus, Loader2 } from 'lucide-react';
+import { DotGridIllustration } from '@/components/shared/DotGridIllustration';
 
 interface MyPuzzle {
   id: number;
@@ -85,9 +86,9 @@ export function MyPuzzlesClient() {
 
       {puzzles.length === 0 ? (
         <div className="mt-16 text-center py-16">
-          <Plus className="w-12 h-12 mx-auto" style={{ color: '#3f3f46' }} />
-          <h3 className="text-xl font-medium mt-4" style={{ color: '#f4f4f5' }}>No puzzles yet</h3>
-          <p className="mt-2 max-w-md mx-auto" style={{ color: '#a1a1aa' }}>
+          <DotGridIllustration size={96} />
+          <h3 className="text-xl font-medium mt-6" style={{ color: '#fafafe' }}>No puzzles yet</h3>
+          <p className="mt-2 max-w-md mx-auto" style={{ color: '#a8a8b8' }}>
             Design your first Killer Sudoku. Use the visual cage editor or let the random generator make one for you.
           </p>
           <Link href="/create" className="btn-primary text-sm mt-6 inline-flex">

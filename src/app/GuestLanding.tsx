@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { motion, useInView, animate, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
+// keep import as-is — useTransform compose used in InteractiveFloatingGrid
 import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
@@ -122,19 +123,38 @@ function Hero() {
 
 function InteractiveFloatingGrid() {
   const ref = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState({ x: 6, y: -8 });
   const [hovering, setHovering] = useState(false);
   const [light, setLight] = useState({ x: 50, y: 50 });
   const reducedMotion = useReducedMotion();
+
+  // Motion values let idle + mouse compose without fighting each other.
+  const idleY = useMotionValue(0);
+  const idleTilt = useMotionValue(0);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Idle floating + slow tilt — ALWAYS runs, even on hover (just slower).
+  useEffect(() => {
+    if (reducedMotion) return;
+    const yCtl = animate(idleY, [-5, 5, -5], { duration: 7, repeat: Infinity, ease: 'easeInOut' });
+    const tCtl = animate(idleTilt, [-1.5, 1.5, -1.5], { duration: 9, repeat: Infinity, ease: 'easeInOut' });
+    return () => {
+      yCtl.stop();
+      tCtl.stop();
+    };
+  }, [idleY, idleTilt, reducedMotion]);
+
+  // Composed transforms (idle + mouse).
+  const rotateX = useTransform([idleTilt, mouseY] as never, ([t, my]: number[]) => 6 + t + my);
+  const rotateY = useTransform([idleTilt, mouseX] as never, ([t, mx]: number[]) => -6 + t + mx);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    const rotateY = ((e.clientX - cx) / rect.width) * 22;
-    const rotateX = -((e.clientY - cy) / rect.height) * 22;
-    setRotation({ x: rotateX, y: rotateY });
+    mouseX.set(((e.clientX - cx) / rect.width) * 18);
+    mouseY.set(-((e.clientY - cy) / rect.height) * 18);
     setLight({
       x: ((e.clientX - rect.left) / rect.width) * 100,
       y: ((e.clientY - rect.top) / rect.height) * 100,
@@ -142,8 +162,8 @@ function InteractiveFloatingGrid() {
   };
   const handleMouseLeave = () => {
     setHovering(false);
-    setRotation({ x: 6, y: -8 });
-    setLight({ x: 50, y: 30 });
+    animate(mouseX, 0, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
+    animate(mouseY, 0, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
   };
 
   // Tiny 4×4 sample puzzle with 4 cages, each in a different cage colour.
@@ -167,7 +187,6 @@ function InteractiveFloatingGrid() {
     });
   });
 
-  // Static fallback for users who prefer reduced motion.
   if (reducedMotion) {
     return <StaticGrid cells={cells} map={map} />;
   }
@@ -178,46 +197,57 @@ function InteractiveFloatingGrid() {
       onMouseEnter={() => setHovering(true)}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 60, rotateX: 20, rotateY: -20, scale: 0.9 }}
-      animate={
-        hovering
-          ? { opacity: 1, y: 0, rotateX: rotation.x, rotateY: rotation.y, scale: 1 }
-          : { opacity: 1, y: [0, -10, 0], rotateX: [rotation.x, rotation.x + 1.5, rotation.x], rotateY: rotation.y, scale: 1 }
-      }
-      transition={
-        hovering
-          ? { type: 'spring', stiffness: 90, damping: 14 }
-          : { duration: 7, repeat: Infinity, ease: 'easeInOut' }
-      }
+      initial={{ opacity: 0, y: 60, rotateX: 26, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
       className="relative"
-      style={{ transformStyle: 'preserve-3d', perspective: 1400, aspectRatio: '1/1', willChange: 'transform' }}
+      style={{
+        transformStyle: 'preserve-3d',
+        perspective: 1400,
+        aspectRatio: '1/1',
+        willChange: 'transform',
+        y: idleY,
+        rotateX,
+        rotateY,
+      }}
     >
-      {/* Floor shadow — projected below the grid */}
+      {/* Layer 1: Ground shadow */}
+      <div
+        className="absolute inset-0 pointer-events-none -z-10"
+        style={{
+          transform: 'translateZ(-60px) scale(1.18)',
+          background: 'radial-gradient(ellipse at center 75%, rgba(0,0,0,0.75), transparent 60%)',
+          filter: 'blur(32px)',
+        }}
+      />
+
+      {/* Layer 2: Multi-hue color glow behind the grid */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          transform: 'translateZ(-50px) scale(1.15)',
-          background: 'radial-gradient(ellipse at center 75%, rgba(0,0,0,0.7), transparent 65%)',
-          filter: 'blur(28px)',
+          transform: 'translateZ(-22px) scale(1.05)',
+          background:
+            'radial-gradient(circle at 20% 20%, rgba(167,139,250,0.22), transparent 50%), radial-gradient(circle at 80% 70%, rgba(34,211,238,0.16), transparent 50%), radial-gradient(circle at 60% 40%, rgba(251,191,36,0.11), transparent 50%)',
+          filter: 'blur(22px)',
         }}
       />
 
-      {/* Base plate */}
+      {/* Layer 3: Glass backplate */}
       <div
         className="absolute inset-0 rounded-2xl"
         style={{
-          transform: 'translateZ(-10px)',
-          background: 'linear-gradient(135deg, #0a0a0f 0%, #13131a 100%)',
-          boxShadow: '0 40px 90px -25px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04)',
+          transform: 'translateZ(-6px)',
+          background: 'linear-gradient(145deg, #1a1a2a, #0a0a14)',
+          boxShadow: '0 40px 100px -25px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.06)',
         }}
       />
 
-      {/* Main grid layer */}
+      {/* Layer 4: Main grid */}
       <div
-        className="relative grid grid-cols-4 grid-rows-4 gap-[2px] p-3 rounded-2xl overflow-hidden"
+        className="relative grid grid-cols-4 grid-rows-4 gap-[3px] p-4 rounded-2xl overflow-hidden"
         style={{
           transformStyle: 'preserve-3d',
-          backgroundColor: '#1a1a23',
+          backgroundColor: 'rgba(255,255,255,0.04)',
           border: '1px solid rgba(255,255,255,0.10)',
           width: '100%',
           height: '100%',
@@ -230,28 +260,31 @@ function InteractiveFloatingGrid() {
             return (
               <motion.div
                 key={`${r}-${c}`}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 + (r * 4 + c) * 0.025 }}
-                className="relative flex items-center justify-center font-mono text-2xl rounded-sm"
+                initial={{ opacity: 0, translateZ: -24, scale: 0.8 }}
+                animate={{ opacity: 1, translateZ: filled ? 8 : 0, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.5 + (r * 4 + c) * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                className="relative flex items-center justify-center font-mono text-3xl rounded-md"
                 style={{
-                  // Filled cells stand 6px off the base plate; empty cells sit flat.
-                  transform: filled ? 'translateZ(6px)' : 'translateZ(0)',
+                  transformStyle: 'preserve-3d',
                   background: filled
-                    ? 'linear-gradient(180deg, #1f1f27, #15151b)'
+                    ? 'linear-gradient(180deg, #2a2a3a 0%, #1a1a26 100%)'
                     : info
                       ? `${info.color}14`
-                      : 'transparent',
+                      : 'rgba(255,255,255,0.02)',
                   boxShadow: filled
-                    ? `inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 4px rgba(0,0,0,0.45)${info ? `, inset 0 0 30px ${info.color}30` : ''}`
+                    ? `inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.30), 0 4px 12px rgba(0,0,0,0.40)${info ? `, inset 0 0 24px ${info.color}25` : ''}`
                     : info
-                      ? `inset 0 0 0 1px ${info.color}24`
-                      : 'inset 0 1px 0 rgba(255,255,255,0.02)',
-                  color: '#f4f4f5',
+                      ? `inset 0 0 0 1px ${info.color}26, inset 0 0 16px ${info.color}18`
+                      : 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+                  color: '#fafafe',
+                  textShadow: filled ? '0 1px 2px rgba(0,0,0,0.6)' : undefined,
                 }}
               >
                 {info?.isFirst && (
-                  <span className="absolute top-1 left-1.5 text-[10px] font-bold" style={{ color: info.color }}>
+                  <span
+                    className="absolute top-1.5 left-2 text-[10px] font-bold"
+                    style={{ color: info.color }}
+                  >
                     {info.sum}
                   </span>
                 )}
@@ -261,25 +294,68 @@ function InteractiveFloatingGrid() {
           }),
         )}
 
-        {/* Cursor-driven specular highlight inside the grid */}
+        {/* Layer 5: Soft directional specular highlight */}
         <div
           className="absolute inset-0 pointer-events-none rounded-2xl"
           style={{
-            background: `radial-gradient(circle 220px at ${light.x}% ${light.y}%, rgba(167, 139, 250, 0.10), transparent 60%)`,
-            mixBlendMode: 'screen',
+            background:
+              'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 30%, transparent 60%, rgba(255,255,255,0.04) 100%)',
           }}
         />
 
-        {/* Soft top-light specular */}
+        {/* Layer 6: Cursor-tracked light — always faintly visible, brighter on hover */}
         <div
           className="absolute inset-0 pointer-events-none rounded-2xl"
           style={{
-            transform: 'translateZ(3px)',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 45%, rgba(255,255,255,0.025) 100%)',
+            background: `radial-gradient(circle 280px at ${light.x}% ${light.y}%, rgba(167,139,250,0.22), transparent 60%)`,
+            mixBlendMode: 'screen',
+            opacity: hovering ? 1 : 0.35,
+            transition: 'opacity 600ms ease',
           }}
         />
+
+        {/* Drifting particles */}
+        <ParticleLayer />
       </div>
     </motion.div>
+  );
+}
+
+function ParticleLayer() {
+  const colors = ['#a78bfa', '#22d3ee', '#fbbf24'];
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+      {Array.from({ length: 7 }).map((_, i) => {
+        const startX = (i * 73) % 100;
+        const startY = (i * 41) % 100;
+        const endX = ((i + 3) * 53) % 100;
+        const endY = ((i + 2) * 37) % 100;
+        return (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 rounded-full"
+            style={{
+              background: colors[i % 3],
+              opacity: 0.35,
+              left: `${startX}%`,
+              top: `${startY}%`,
+              filter: 'blur(0.5px)',
+            }}
+            animate={{
+              left: [`${startX}%`, `${endX}%`],
+              top: [`${startY}%`, `${endY}%`],
+              opacity: [0.15, 0.5, 0.15],
+            }}
+            transition={{
+              duration: 8 + (i * 1.3) % 5,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+            }}
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -290,8 +366,8 @@ function StaticGrid({ cells, map }: {
   return (
     <div className="relative aspect-square">
       <div
-        className="relative grid grid-cols-4 grid-rows-4 gap-[2px] p-3 rounded-2xl overflow-hidden"
-        style={{ backgroundColor: '#1a1a23', border: '1px solid rgba(255,255,255,0.10)' }}
+        className="relative grid grid-cols-4 grid-rows-4 gap-[3px] p-4 rounded-2xl overflow-hidden"
+        style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }}
       >
         {cells.flatMap((row, r) =>
           row.map((v, c) => {
@@ -299,14 +375,14 @@ function StaticGrid({ cells, map }: {
             return (
               <div
                 key={`${r}-${c}`}
-                className="relative flex items-center justify-center font-mono text-2xl rounded-sm"
+                className="relative flex items-center justify-center font-mono text-3xl rounded-md"
                 style={{
-                  background: v !== 0 ? '#15151b' : info ? `${info.color}14` : 'transparent',
-                  color: '#f4f4f5',
+                  background: v !== 0 ? 'linear-gradient(180deg, #2a2a3a, #1a1a26)' : info ? `${info.color}14` : 'transparent',
+                  color: '#fafafe',
                 }}
               >
                 {info?.isFirst && (
-                  <span className="absolute top-1 left-1.5 text-[10px] font-bold" style={{ color: info.color }}>
+                  <span className="absolute top-1.5 left-2 text-[10px] font-bold" style={{ color: info.color }}>
                     {info.sum}
                   </span>
                 )}

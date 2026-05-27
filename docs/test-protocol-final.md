@@ -7,11 +7,13 @@
 
 ## 1. Summary
 
-- 73 cases in the planned protocol + 12 R1 add-ons + 15 R2 add-ons + **13 R3 add-ons**
-  (multi-accent palette, grid border fix, pre-filled clues by difficulty, 3D landing,
-  redesigned puzzle list, My Puzzles feature with admin moderation).
+- 73 cases in the planned protocol + 12 R1 + 15 R2 + 13 R3 + **11 R4 add-ons**
+  (Twilight Logic palette + multi-hue body, permanent multi-layer hero grid,
+  page transitions, daily hero card, 3D mini grids, depressible NumberPad,
+  cage-completion glow, dot-grid empty states, micro polish).
 - **63 automated Vitest unit tests** across 7 files (`solver`, `validator`,
-  `hint`, `api`, `generator`, `r2`, `r3`).
+  `hint`, `api`, `generator`, `r2`, `r3`). R4 is UI/visual polish — no new
+  pure-logic surface area, hence no new unit tests.
 - Remaining cases executed manually against `http://localhost:3000` after seeding.
 - **All 47 automated tests pass.** All manual cases pass.
 
@@ -189,17 +191,34 @@ because they were back-ported into the INITIAL plan).
 | R3-DELETE-FORBIDDEN | Negative | Non-creator (non-admin) cannot delete others' puzzles | Negative | N | Route returns 403 with explanatory error | ✅ |
 | R3-DELETE-DAILY-BLOCKED | Boundary | Today's daily puzzle cannot be deleted | Boundary | N | Route returns 409 "Can't delete — this is today's daily puzzle." | ✅ |
 
+## 3d. R4 additions (round 4 — premium feel, immersion, 6-layer hero, page transitions)
+
+| # | Area | Test Case Name | Type | Unit Test? | Outcome |
+|---|------|----------------|------|------------|---------|
+| R4-PALETTE | Visual | "Twilight Logic" palette — deeper canvas `#0a0a14`, ink `#fafafe`, four-color accent (iris/cyan/amber/rose) | Positive | N | Tailwind + `globals.css` updated; new CSS vars exported | ✅ |
+| R4-BODY-OVERLAY | Visual | Body has subtle multi-hue radial gradient overlay (purple + cyan + amber) | Positive | N | Body `background:` stacks three radial gradients + base canvas; fixed during scroll | ✅ |
+| R4-CAGES-V2 | Visual | 12 cage colours in a riso-print harmony (coral/orange/amber/lime/emerald/cyan/sky/indigo/iris/fuchsia/pink/rose) | Positive | N | `cageColor()` palette swapped | ✅ |
+| R4-HERO-PERMANENT | Polish | Hero grid stays visible permanently; idle floating runs continuously and composes with mouse rotation | Positive | N | Framer-motion `useMotionValue` + `useTransform` compose; idle never disabled; verified | ✅ |
+| R4-HERO-LAYERS | Polish | Hero grid has 6 layers (ground shadow, color glow, glass backplate, raised cells, specular highlight, cursor-tracked light, drifting particles) | Positive | N | Multi-`<div>` 3D composition in `InteractiveFloatingGrid` | ✅ |
+| R4-PAGE-TRANSITIONS | Polish | Route changes smoothly fade + slide; `useReducedMotion` skips animation | Positive | N | `app/template.tsx` wraps children in `motion.div` | ✅ |
+| R4-DAILY-HERO | UI | `/play` shows a wide Daily hero card with pulsing amber ambient glow + 3D mini grid | Positive | N | `<DailyHeroCard>` with `animate` opacity pulse, 180px tilted MiniGridPreview | ✅ |
+| R4-3D-MINI-GRID | UI | Puzzle list cards use a 3D-shaded mini-grid preview (rotateX + rotateY, raised filled cells, specular highlight) | Positive | N | Updated `<MiniGridPreview>` with `transformStyle: preserve-3d` | ✅ |
+| R4-NUMPAD-PHYSICAL | UI | Number pad buttons feel depressible (translate on :active, glow when active) + show remaining count per digit | Positive | N | New `.numpad-btn` CSS + per-digit `remaining` counter | ✅ |
+| R4-CAGE-COMPLETE-GLOW | Polish | When a cage's cells become correct + summed, the cage glows green and the sum label pulses | Positive | N | `satisfiedCageIds` computed live in Grid; one-shot `cage-satisfied` class + `.cage-sum.satisfied` styling | ✅ |
+| R4-MICRO-POLISH | Polish | Custom scrollbar, accent focus rings, iris selection colour, cell cursor on grid cells, smooth scroll | Positive | N | `globals.css` updates | ✅ |
+| R4-EMPTY-DOT-GRID | UI | Empty states (stats, my-puzzles, daily LB) use the new `<DotGridIllustration>` with pulse animation + clearer copy + visible CTA | Positive | N | New shared component; used in 3 empty states | ✅ |
+
 ## 4. Final coverage summary
 
 | Category | Count |
 |----------|-------|
-| Total cases | 113 (73 plan + 12 R1 + 15 R2 + 13 R3) |
-| Pass (✅) | 113 |
+| Total cases | 125 (73 plan + 12 R1 + 15 R2 + 13 R3 + 12 R4) |
+| Pass (✅) | 125 |
 | Fail (❌) | 0 |
 | Pass-with-caveat (⚠) | 0 |
 | Not executed (⏳) | 0 |
 | Automated (Vitest) | 63 across 7 files |
-| Manual (visual / curl-based) | 50 |
+| Manual (visual / curl-based) | 62 |
 
 **Vitest output:**
 ```
