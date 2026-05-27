@@ -49,6 +49,7 @@
     "jsdom": "^25.0.1",
     "postcss": "^8.4.49",
     "prisma": "^5.22.0",
+    "puppeteer": "^25.1.0",
     "tailwindcss": "^3.4.15",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",

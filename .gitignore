@@ -53,3 +53,7 @@ docs/*.tmp.html
 # User-uploaded avatars (keep folder via .gitkeep)
 public/avatars/*
 !public/avatars/.gitkeep
+
+# Raw mockup source — the renamed PNGs are committed instead
+docs/mockups/source.pdf
+docs/mockups/screenshots/page-*.png
