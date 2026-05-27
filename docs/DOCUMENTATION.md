@@ -9,7 +9,7 @@
 Mai 2026 · Version 1.0 (Final Submission)
 
 GitHub: <https://github.com/KorelUyar/killer-sudoku>
-Live: *deployment pending — Setup-Anleitung in §15*
+Live: <https://sudobattles.com>
 
 </div>
 
@@ -72,13 +72,13 @@ Die fertige Anwendung deckt **alle 14 Use Cases** vollständig ab. Sie verwendet
 | Tests | Vitest 2 | Schnell, ESM-nativ, Watch-Mode |
 | PDF-Render | Puppeteer | Markdown → A4 PDF mit Mermaid-Rendering |
 
-## 3. Mockups
+## 3. Mockups & Live-Screenshots
 
-Diese Sektion zeigt die finalen **UI-Design-Mockups** jeder Hauptseite. Die Reihenfolge folgt dem typischen User-Flow.
+Diese Sektion zeigt jede Hauptseite der Applikation. Die Reihenfolge folgt dem typischen User-Flow.
 
-> **Hinweis:** Diese Bilder sind statische Design-Mockups, die den **angestrebten visuellen Endzustand** zeigen. Die laufende Applikation kann in Details abweichen — z. B. enthalten die Mockups beispielhafte Cage-Layouts, Leaderboard-Einträge fiktiver User (`mastrandrea`, `jvogel`, `darian_42` etc.) und Beispiel-Zeiten, die in der realen App naturgemäß anders aussehen. Für den aktuellen produktiven Zustand bitte die App lokal starten (siehe §15 Setup-Anleitung).
+> **Hinweis zur Bildherkunft:** Die Landing-Page (§3.1), die Puzzle Library (§3.4), die Daily Challenge (§3.7) und das Personal-Stats-Dashboard (§3.9) sind **Live-Screenshots der laufenden Applikation** unter <https://sudobattles.com>. Die übrigen Bilder sind **Design-Mockups** aus dem Design-Tool — sie zeigen den angestrebten visuellen Endzustand und können in Details (Beispiel-User wie `mastrandrea`, `jvogel`, illustrative Cage-Layouts, beispielhafte Solve-Zeiten) von der Live-App abweichen.
 
-### 3.1 Landing Page
+### 3.1 Landing Page  *(Live-Screenshot)*
 
 ![Landing — Hero](mockups/screenshots/01-landing.png)
 
@@ -100,7 +100,7 @@ Login-Seite mit zwei-Spalten-Layout: links das Formular (Username + Passwort), r
 
 Registrierungs-Formular mit live-Passwort-Strength-Indicator und Bestätigungs-Feld. Validation läuft auf Client- und Backend-Seite (Zod-Schema). **Use Case:** UC2 (create user).
 
-### 3.4 Puzzle Library (Browse)
+### 3.4 Puzzle Library (Browse)  *(Live-Screenshot)*
 
 ![Puzzle Library — Header](mockups/screenshots/04b-play-header.png)
 
@@ -122,7 +122,7 @@ Das Spielbild. Links das 9×9-Grid mit sichtbar getrennten Zellen, fettem 3×3-B
 
 Der Builder unterstützt zwei Modi: **Manual** (Cells klicken, Cage-Summe eintragen) und **Random** (Generator wählt Cage-Layout per Difficulty). Rechts der Status-Panel: Coverage (63/81 cells), Σ-cage-sums (312/405) und Uniquely-Solvable-Check. Saven ist erst möglich, wenn alle drei grün sind. **Use Cases:** UC4 (enter puzzle), UC5 (save new puzzle).
 
-### 3.7 Daily Challenge
+### 3.7 Daily Challenge  *(Live-Screenshot)*
 
 ![Daily](mockups/screenshots/07-daily.png)
 
@@ -136,7 +136,7 @@ Daily Challenge: ein Puzzle pro Tag, identisch für alle User weltweit, determin
 
 Die globale Hall of Fame: alle Resultate aller User über alle Puzzles, sortiert nach Score (Zeit + 60 × Hints). Filter-Bar für Zeitraum (All time / This week / Today) und für Schwierigkeit. **Use Case:** UC8 (show high score).
 
-### 3.9 Personal Stats
+### 3.9 Personal Stats  *(Live-Screenshot)*
 
 ![Stats](mockups/screenshots/09-stats.png)
 
@@ -666,9 +666,11 @@ npm start          # Production-Server
 
 ## 16. Live-Demo
 
-🌐 **Live-URL:** *deployment pending — wird unter `https://sudobattles.com` oder einer vergleichbaren Domain bereitgestellt*.
+🌐 **Live-URL:** <https://sudobattles.com>
 
-Falls die Live-Version zum Zeitpunkt der Bewertung nicht erreichbar ist: bitte der Setup-Anleitung in §15 folgen. Lokales Setup benötigt nur Node.js und MySQL und ist in ca. 5 Minuten einsatzbereit.
+Die App ist 24/7 erreichbar und identisch konfiguriert zur lokalen Instanz. Login mit `admin` / `Admin1234` möglich (vorgegebener Default-Account) oder ein neuer Account kann direkt erstellt werden.
+
+Falls die Live-Version zum Zeitpunkt der Bewertung nicht erreichbar sein sollte: bitte der Setup-Anleitung in §15 folgen. Lokales Setup benötigt nur Node.js und MySQL und ist in ca. 5 Minuten einsatzbereit.
 
 ## 17. GitHub Repository
 
